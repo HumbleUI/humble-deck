@@ -15,3 +15,7 @@
       (window/set-window-size window 764 1312)
       (window/set-z-order window :floating)))
   (nrepl/-main "--interactive"))
+
+(comment
+  (app/doui
+    (window/set-z-order @main/*window :normal)))
