@@ -26,12 +26,6 @@
 (defonce typeface
   (typeface/make-from-path "resources/MartianMono-StdRg.otf"))
 
-(def font-body
-  (font/make-with-cap-height typeface 20))
-
-(def font-header
-  (font/make-with-cap-height typeface 30))
-
 (def *slide0
   (delay
     (ui/image (io/file "resources/slide 0.png"))))
@@ -40,9 +34,10 @@
   (delay
     (ui/padding 10
       (ui/column
-        (ui/with-context
-          {:font-ui font-header}
-          (ui/label "Why Clojure?"))
+        (ui/dynamic ctx [{:keys [font-h1]} ctx]
+          (ui/with-context
+            {:font-ui font-h1}
+            (ui/label "Why Clojure?")))
         (ui/gap 0 10)
         (ui/rect (paint/fill 0xFF000000)
           (ui/gap 0 1))
@@ -80,23 +75,29 @@
       (redraw))))
 
 (def app
-  (ui/default-theme
-    {:font-ui font-body}
-    (ui/mouse-listener
-      {:on-move (fn [_] (controls/show-controls!))
-       :on-over (fn [_] (controls/show-controls!))
-       :on-out  (fn [_] (controls/hide-controls!))}
-      (ui/stack
-        (ui/halign 0.5
-          (ui/valign 0.5
-            (scaler/scaler
-              (ui/rect (paint/fill 0xFFFFFFFF)
-                (ui/dynamic _ [current @*current]
-                  @(nth slides current))))))
-        (ui/halign 0.5
-          (ui/valign 1
-            (ui/padding 0 0 0 20
-              (controls/controls *current slides))))))))
+  (ui/dynamic ctx [{:keys [scale]} ctx]
+    (let [font-ui (font/make-with-cap-height typeface (* scale 10))
+          font-h1 (font/make-with-cap-height typeface (* scale 15))]
+      (ui/default-theme
+        {:face-ui typeface
+         :font-ui font-ui}
+        (ui/with-context
+          {:font-h1 font-h1}
+          (ui/mouse-listener
+            {:on-move (fn [_] (controls/show-controls!))
+             :on-over (fn [_] (controls/show-controls!))
+             :on-out  (fn [_] (controls/hide-controls!))}
+            (ui/stack
+              (ui/halign 0.5
+                (ui/valign 0.5
+                  (scaler/scaler
+                    (ui/rect (paint/fill 0xFFFFFFFF)
+                      (ui/dynamic _ [current @*current]
+                        @(nth slides current))))))
+              (ui/halign 0.5
+                (ui/valign 1
+                  (ui/padding 0 0 0 20
+                    (controls/controls *current slides)))))))))))
 
 (redraw)
 
