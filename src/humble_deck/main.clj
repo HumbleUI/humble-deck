@@ -5,8 +5,10 @@
     [humble-deck.scaler :as scaler]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
+    [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
+    [io.github.humbleui.typeface :as typeface]
     [io.github.humbleui.ui :as ui]
     [io.github.humbleui.window :as window])
   (:import
@@ -21,6 +23,15 @@
 (defn redraw []
   (some-> @*window window/request-frame))
 
+(defonce typeface
+  (typeface/make-from-path "resources/MartianMono-StdRg.otf"))
+
+(def font-body
+  (font/make-with-cap-height typeface 20))
+
+(def font-header
+  (font/make-with-cap-height typeface 30))
+
 (def *slide0
   (delay
     (ui/image (io/file "resources/slide 0.png"))))
@@ -28,7 +39,17 @@
 (def *slide1
   (delay
     (ui/padding 10
-      (ui/label "Slide 1"))))
+      (ui/column
+        (ui/with-context
+          {:font-ui font-header}
+          (ui/label "Why Clojure?"))
+        (ui/gap 0 10)
+        (ui/rect (paint/fill 0xFF000000)
+          (ui/gap 0 1))
+        (ui/gap 0 10)
+        (ui/label "• REPL")
+        (ui/gap 0 10)
+        (ui/label "• Utilize computer")))))
 
 (def *slide2
   (delay
@@ -60,6 +81,7 @@
 
 (def app
   (ui/default-theme
+    {:font-ui font-body}
     (ui/mouse-listener
       {:on-move (fn [_] (controls/show-controls!))
        :on-over (fn [_] (controls/show-controls!))

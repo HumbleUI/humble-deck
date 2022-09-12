@@ -17,20 +17,28 @@
   (reset! *controls-visible? false)
   (when-some [cancel-timer @*controls-timer]
     (cancel-timer))
-  (reset! *controls-timer nil)
-  #_(redraw))
+  (reset! *controls-timer nil))
 
 (defn show-controls! []
   (reset! *controls-visible? true)
   (when-some [cancel-timer @*controls-timer]
     (cancel-timer))
-  (reset! *controls-timer (core/schedule hide-controls! 5000))
-  #_(redraw))
+  (reset! *controls-timer (core/schedule hide-controls! 5000)))
 
 (defn safe-add [x y from to]
   (-> (+ x y)
     (min (dec to))
     (max from)))
+
+(def icon-prev
+  (ui/width 14
+    (ui/height 14
+      (ui/svg "resources/prev.svg"))))
+
+(def icon-next
+  (ui/width 14
+    (ui/height 14
+      (ui/svg "resources/next.svg"))))
 
 (defn controls [*current slides]
   (ui/key-listener
@@ -65,9 +73,9 @@
                 (ui/width 50
                   (ui/height 50
                     (ui/button #(swap! *current safe-add -1 0 (count slides))
-                      (ui/label "◀︎"))))
+                      icon-prev)))
                     
-                (ui/width 60
+                (ui/width 70
                   (ui/halign 0.5
                     (ui/valign 0.5
                       (ui/dynamic _ [current @*current]
@@ -76,4 +84,4 @@
                 (ui/width 50
                   (ui/height 50
                     (ui/button #(swap! *current safe-add 1 0 (count slides))
-                      (ui/label "▶︎"))))))))))))
+                      icon-next)))))))))))
