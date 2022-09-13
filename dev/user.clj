@@ -11,11 +11,13 @@
   ; (reset! debug/*enabled? true)
   (app/doui
     (when-some [window @main/*window]
-      (window/set-window-position window 2260 76)
-      (window/set-window-size window 764 1312)
+      (window/set-window-position window 1976 76)
+      (window/set-window-size window 1048 644)
       (window/set-z-order window :floating)))
   (nrepl/-main "--interactive"))
 
 (comment
+  (app/doui
+    (window/window-rect @main/*window))
   (app/doui
     (window/set-z-order @main/*window :normal)))

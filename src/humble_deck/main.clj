@@ -23,38 +23,37 @@
 (defn redraw []
   (some-> @*window window/request-frame))
 
-(defonce typeface
-  (typeface/make-from-path "resources/MartianMono-StdRg.otf"))
+(def typeface-regular
+  (typeface/make-from-path "resources/CaseMicro-Regular.otf"))
+
+(def typeface-bold
+  (typeface/make-from-path "resources/CaseMicro-Bold.otf"))
 
 (def *slide0
   (delay
-    (ui/image (io/file "resources/slide 0.png"))))
+    (scaler/scaler 1
+      (ui/svg (io/file "resources/slide 0.svg")))))
 
 (def *slide1
   (delay
-    (ui/padding 10
+    (ui/dynamic ctx [{:keys [font-body font-h1 leading]} ctx]
       (ui/column
-        (ui/dynamic ctx [{:keys [font-h1]} ctx]
-          (ui/with-context
-            {:font-ui font-h1}
-            (ui/label "Why Clojure?")))
-        (ui/gap 0 10)
-        (ui/rect (paint/fill 0xFF000000)
-          (ui/gap 0 1))
-        (ui/gap 0 10)
+        (ui/with-context {:font-ui font-h1}
+          (ui/label "Why Clojure?"))
+        (ui/gap 0 leading)
         (ui/label "• REPL")
-        (ui/gap 0 10)
+        (ui/gap 0 leading)
         (ui/label "• Utilize computer")))))
 
 (def *slide2
   (delay
-    (ui/padding 10
+    (ui/dynamic ctx [{:keys [leading]} ctx]
       (ui/column
         (ui/halign 0.5
-          (ui/label "Thank you"))
-        (ui/gap 0 10)
+          (ui/label "Thank you for"))
+        (ui/gap 0 leading)
         (ui/halign 0.5
-          (ui/label "for your attention!"))))))
+          (ui/label "your attention!"))))))
 
 (def slides
   [*slide0
@@ -75,29 +74,33 @@
       (redraw))))
 
 (def app
-  (ui/dynamic ctx [{:keys [scale]} ctx]
-    (let [font-ui (font/make-with-cap-height typeface (* scale 10))
-          font-h1 (font/make-with-cap-height typeface (* scale 15))]
-      (ui/default-theme
-        {:face-ui typeface
-         :font-ui font-ui}
-        (ui/with-context
-          {:font-h1 font-h1}
-          (ui/mouse-listener
-            {:on-move (fn [_] (controls/show-controls!))
-             :on-over (fn [_] (controls/show-controls!))
-             :on-out  (fn [_] (controls/hide-controls!))}
-            (ui/stack
-              (ui/halign 0.5
-                (ui/valign 0.5
-                  (scaler/scaler
+  (ui/with-bounds ::bounds
+    (ui/dynamic ctx [cap-height (-> (::bounds ctx) :height (quot 10))]
+      (let [font-body (font/make-with-cap-height typeface-regular cap-height)
+            font-h1 (font/make-with-cap-height typeface-bold cap-height)]
+        (ui/default-theme
+          {:face-ui typeface-regular}
+          (ui/with-context
+            {:font-body font-body
+             :font-h1   font-h1
+             :leading   (quot cap-height 2)}
+            (ui/mouse-listener
+              {:on-move (fn [_] (controls/show-controls!))
+               :on-over (fn [_] (controls/show-controls!))
+               :on-out  (fn [_] (controls/hide-controls!))}
+              (ui/stack
+                (ui/halign 0.5
+                  (ui/valign 0.5
                     (ui/rect (paint/fill 0xFFFFFFFF)
-                      (ui/dynamic _ [current @*current]
-                        @(nth slides current))))))
-              (ui/halign 0.5
-                (ui/valign 1
-                  (ui/padding 0 0 0 20
-                    (controls/controls *current slides)))))))))))
+                      (ui/dynamic ctx [{:keys [font-body]} ctx
+                                       current @*current]
+                        (ui/with-context
+                          {:font-ui font-body}
+                          @(nth slides current))))))
+                (ui/halign 0.5
+                  (ui/valign 1
+                    (ui/padding 0 0 0 20
+                      (controls/controls *current slides))))))))))))
 
 (redraw)
 
@@ -106,7 +109,7 @@
     (ui/start-app!
       {:title    "Humble 🐝 Deck"
        :mac-icon "resources/icon.icns"
-       :bg-color 0xFFEEEEEE}
+       :bg-color 0xFFFFFFFF}
       #'app)))
 
 (comment
