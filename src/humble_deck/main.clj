@@ -1,6 +1,7 @@
 (ns humble-deck.main
   (:require
     [clojure.java.io :as io]
+    [clojure.string :as str]
     [humble-deck.controls :as controls]
     [humble-deck.scaler :as scaler]
     [io.github.humbleui.canvas :as canvas]
@@ -29,36 +30,125 @@
 (def typeface-bold
   (typeface/make-from-path "resources/CaseMicro-Bold.otf"))
 
-(def *slide0
-  (delay
-    (scaler/scaler 1
-      (ui/svg (io/file "resources/slide 0.svg")))))
+(defn template-label
+  ([s] (template-label {} s))
+  ([opts s]
+   (ui/center
+     (ui/dynamic ctx [{:keys [fill-text leading]} ctx]
+       (ui/column
+         (interpose (ui/gap 0 leading)
+           (for [line (str/split s #"\n")]
+             (ui/halign 0.5
+               (ui/label line)))))))))
 
-(def *slide1
-  (delay
-    (ui/dynamic ctx [{:keys [font-body font-h1 leading]} ctx]
-      (ui/column
-        (ui/with-context {:font-ui font-h1}
-          (ui/label "Why Clojure?"))
-        (ui/gap 0 leading)
-        (ui/label "• REPL")
-        (ui/gap 0 leading)
-        (ui/label "• Utilize computer")))))
+(defn template-image [name & label]
+  (scaler/scaler 1
+    (ui/image (io/file "slides" name))))
 
-(def *slide2
-  (delay
-    (ui/dynamic ctx [{:keys [leading]} ctx]
-      (ui/column
-        (ui/halign 0.5
-          (ui/label "Thank you for"))
-        (ui/gap 0 leading)
-        (ui/halign 0.5
-          (ui/label "your attention!"))))))
+(defn template-svg [name]
+  (scaler/scaler 1
+    (ui/svg (io/file "slides" name))))
+
+(defn template-section [name]
+  (ui/center
+    (ui/dynamic ctx [{:keys [font-h1 leading]} ctx]
+      (ui/with-context {:font-ui font-h1}
+        (ui/column
+          (interpose (ui/gap 0 leading)
+            (for [line (str/split name #"\n")]
+              (ui/halign 0.5
+                (ui/label line)))))))))
+
+(def icon-bullet
+  (ui/dynamic ctx [{:keys [unit]} ctx]
+    (ui/row
+      (ui/valign 0.5
+        (ui/rect (paint/fill 0xFF000000)
+          (ui/gap (* 2 unit) (* 2 unit)))))))
+
+(defn template-list [opts & lines]
+  (let [{:keys [header range]} opts
+        header-label (when header
+                       (ui/dynamic ctx [{:keys [font-h1]} ctx]
+                         (ui/with-context {:font-ui font-h1}
+                           (ui/label header))))
+        labels (map
+                 #(ui/dynamic ctx [{:keys [unit]} ctx]
+                    (ui/row
+                      icon-bullet
+                      (ui/gap (* unit 3) 0)
+                      (ui/label %)))
+                 lines)
+        probes (concat (when header-label [header-label]) labels)]
+    (for [i (if-some [[from to] range]
+              (clojure.core/range from (inc to))
+              [(count probes)])]
+      (ui/center
+        (ui/max-width probes
+          (ui/dynamic ctx [{:keys [leading]} ctx]
+            (ui/column
+              (interpose (ui/gap 0 leading)
+                (for [label (take i probes)]
+                  (ui/halign 0
+                    label))))))))))
 
 (def slides
-  [*slide0
-   *slide1
-   *slide2])
+  (vec
+    (flatten
+      [(delay (template-svg "title.svg"))
+       
+       (template-section "Let’s focus on\nDESKTOP")
+       (template-label "Mobile is taken care of")
+       (template-label "Mobile-desktop unification\nis a dream")
+       
+       (template-section "Time for desktop apps is NOW")
+       (delay
+         (ui/stack
+           (template-image "electron_apps.jpg")
+           (ui/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
+             (template-label "People love apps"))))
+       (template-label "Native?")
+       (template-label "It’s hard to make a case for")
+       (template-list {:range [1 5]} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Stupid")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Suboptimal")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Suboptimal" "And $")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Suboptimal" "And $$")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Suboptimal" "And $$$")
+       (template-list {} "Multiple platforms" "Multiple teams" "Separate codebases" "Same app" "Suboptimal" "And $$$$")
+       (template-label "And")
+       (template-label "And Logistically")
+       (template-label "And Logistically Complicated")
+       (template-label "Frankly, not worth it")
+       (delay (template-svg "ui_quality.svg"))
+       (template-label "People are accustomed\nto cross-platform UIs")
+       (delay (template-svg "affordances 0.svg"))
+       (delay (template-svg "affordances 1.svg"))
+       (delay (template-svg "affordances 2.svg"))
+       (delay (template-svg "affordances 3.svg"))
+       (delay (template-svg "affordances 4.svg"))
+       (delay (template-svg "affordances 5.svg"))
+       (delay (template-svg "affordances 6.svg"))
+       (delay (template-svg "affordances 7.svg"))
+       
+       (template-section "So")
+       (template-list {:header "We want" :range [1 4]} "UI framework" "desktop" "cross-platform")
+       
+       (template-section "Electron!")
+       (template-list {:header "Electron:" :range [2 4]} "Performance" "Resource utilization" "Threading model")
+       
+       (template-label "QT")
+       (template-label "QT is C++")
+       (template-label "Java UI")
+       (template-label "Java UI is cursed")
+       (template-label "Swing is too old")
+       (template-label "JavaFX is too quirky")
+       
+       (template-label "There’s no inherent reason\nwhy Java UI won’t work")
+       (template-label "It just hasn’t been done yet")
+       
+       
+       ])))
 
 (defonce *current
   (atom 0))
@@ -81,22 +171,23 @@
         (ui/default-theme
           {:face-ui typeface-regular}
           (ui/with-context
-            {:font-body font-body
-             :font-h1   font-h1
-             :leading   (quot cap-height 2)}
+            {:font-body  font-body
+             :font-h1    font-h1
+             :leading    (quot cap-height 2)
+             :unit       (quot cap-height 10)}
             (ui/mouse-listener
               {:on-move (fn [_] (controls/show-controls!))
                :on-over (fn [_] (controls/show-controls!))
                :on-out  (fn [_] (controls/hide-controls!))}
               (ui/stack
-                (ui/halign 0.5
-                  (ui/valign 0.5
-                    (ui/rect (paint/fill 0xFFFFFFFF)
-                      (ui/dynamic ctx [{:keys [font-body]} ctx
-                                       current @*current]
-                        (ui/with-context
-                          {:font-ui font-body}
-                          @(nth slides current))))))
+                (ui/rect (paint/fill 0xFFFFFFFF)
+                  (ui/dynamic ctx [{:keys [font-body]} ctx
+                                   current @*current]
+                    (ui/with-context
+                      {:font-ui font-body}
+                      (let [slide (nth slides current)]
+                        (cond-> slide
+                          (delay? slide) deref)))))
                 (ui/halign 0.5
                   (ui/valign 1
                     (ui/padding 0 0 0 20
@@ -107,7 +198,7 @@
 (defn -main [& args]
   (reset! *window 
     (ui/start-app!
-      {:title    "Humble 🐝 Deck"
+      {:title    "Desktop UI with Clojure"
        :mac-icon "resources/icon.icns"
        :bg-color 0xFFFFFFFF}
       #'app)))

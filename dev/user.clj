@@ -6,17 +6,21 @@
     [io.github.humbleui.window :as window]
     [nrepl.cmdline :as nrepl]))
 
+(defn reset-window []
+  (app/doui
+    (when-some [window @main/*window]
+      (window/set-window-position window 860 566)
+      (window/set-content-size window 1422 800)
+      #_(window/set-z-order window :floating))))
+
 (defn -main [& args]
   (main/-main)
   ; (reset! debug/*enabled? true)
-  (app/doui
-    (when-some [window @main/*window]
-      (window/set-window-position window 1976 76)
-      (window/set-window-size window 1048 644)
-      (window/set-z-order window :floating)))
+  (reset-window)
   (nrepl/-main "--interactive"))
 
 (comment
+  (reset-window)
   (app/doui
     (window/window-rect @main/*window))
   (app/doui
