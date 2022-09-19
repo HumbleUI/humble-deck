@@ -42,7 +42,12 @@
     (ui/height 14
       (ui/svg "resources/next.svg"))))
 
-(defn controls [*current slides]
+(def icon-overview
+  (ui/width 14
+    (ui/height 14
+      (ui/svg "resources/overview.svg"))))
+
+(defn controls [*current *mode slides]
   (ui/key-listener
     {:on-key-down
      (fn [{:keys [key modifiers]}]
@@ -79,15 +84,27 @@
                                     (swap! *current safe-add -1 0 (count slides))
                                     (show-controls!))
                         icon-prev)))
-                    
-                  (ui/width 70
-                    (ui/center
-                      (ui/dynamic _ [current @*current]
-                        (ui/label (format "%d / %d" (inc current) (count slides))))))
-                      
+                  
                   (ui/width 50
                     (ui/height 50
                       (ui/button #(do
                                     (swap! *current safe-add 1 0 (count slides))
                                     (show-controls!))
-                        icon-next))))))))))))
+                        icon-next)))
+                                      
+                  #_(ui/width 70
+                    (ui/center
+                      (ui/label (format "%d / %d" (inc current) (count slides)))))
+                  
+                  (ui/width 50
+                    (ui/height 50
+                      (ui/button #(do
+                                    (swap! *mode {:overview :present, :present :overview})
+                                    (show-controls!))
+                        icon-overview)))
+                      
+                  
+                  
+                  
+
+                  )))))))))
