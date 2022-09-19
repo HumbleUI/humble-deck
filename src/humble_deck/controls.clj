@@ -75,7 +75,9 @@
                 (ui/row
                   (ui/width 50
                     (ui/height 50
-                      (ui/button #(swap! *current safe-add -1 0 (count slides))
+                      (ui/button #(do
+                                    (swap! *current safe-add -1 0 (count slides))
+                                    (show-controls!))
                         icon-prev)))
                     
                   (ui/width 70
@@ -85,5 +87,7 @@
                       
                   (ui/width 50
                     (ui/height 50
-                      (ui/button #(swap! *current safe-add 1 0 (count slides))
+                      (ui/button #(do
+                                    (swap! *current safe-add 1 0 (count slides))
+                                    (show-controls!))
                         icon-next))))))))))))
