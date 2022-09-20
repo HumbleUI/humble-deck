@@ -27,7 +27,7 @@
   10)
 
 (def zoom-time
-  1500)
+  150)
 
 (defn slide-size [{:keys [width height]}]
   (let [per-row (max 1 (quot width 200))

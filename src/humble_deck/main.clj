@@ -40,7 +40,8 @@
     (ui/image (io/file "slides" name))))
 
 (defn template-svg [name]
-  (ui/svg (io/file "slides" name)))
+  (scaler/scaler ratio
+    (ui/svg (io/file "slides" name))))
 
 (defn template-section [name]
   (ui/center
