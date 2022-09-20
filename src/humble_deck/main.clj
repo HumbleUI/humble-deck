@@ -3,6 +3,8 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [humble-deck.controls :as controls]
+    [humble-deck.core :refer :all]
+    [humble-deck.overview :as overview]
     [humble-deck.scaler :as scaler]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
@@ -15,24 +17,12 @@
     [io.github.humbleui.window :as window])
   (:import
     [io.github.humbleui.types IPoint IRect]
-    [io.github.humbleui.skija ColorSpace]
+    [io.github.humbleui.skija Color ColorSpace]
     [io.github.humbleui.jwm Window]
     [io.github.humbleui.jwm.skija LayerMetalSkija]
     [java.lang AutoCloseable]))
 
 (set! *warn-on-reflection* true)
-
-(defonce *window
-  (atom nil))
-
-(defn redraw []
-  (some-> @*window window/request-frame))
-
-(def typeface-regular
-  (typeface/make-from-path "resources/CaseMicro-Regular.otf"))
-
-(def typeface-bold
-  (typeface/make-from-path "resources/CaseMicro-Bold.otf"))
 
 (defn template-label
   ([s] (template-label {} s))
@@ -46,7 +36,7 @@
                (ui/label line)))))))))
 
 (defn template-image [name]
-  (scaler/scaler 1
+  (scaler/scaler ratio
     (ui/image (io/file "slides" name))))
 
 (defn template-svg [name]
@@ -166,18 +156,7 @@
          "but without browser")
        ])))
 
-(defonce *current
-  (atom 0))
-
-(defonce *mode
-  (atom :overview))
-
-(add-watch *current ::redraw
-  (fn [_ _ old new]
-    (when (not= old new)
-      (redraw))))
-
-(add-watch *mode ::redraw
+(add-watch *state ::redraw
   (fn [_ _ old new]
     (when (not= old new)
       (redraw))))
@@ -187,68 +166,11 @@
     (when (not= old new)
       (redraw))))
 
-(def overview-padding
-  10)
-
-(defn slide-size [{:keys [width height]}]
-  (let [per-row (max 1 (quot width 200))
-        slide-w (-> width
-                  (- (* (inc per-row) overview-padding))
-                  (quot per-row))
-        ratio   (/ 3024 1964) #_(/ width height)]
-    {:per-row per-row
-     :slide-w slide-w
-     :slide-h (/ slide-w ratio)}))
-     
-
-(def overview
-  (ui/rect (paint/fill 0xFFF0F0F0)
-    (ui/with-bounds ::bounds
-      (ui/dynamic ctx [{:keys [scale]} ctx
-                       {:keys [per-row slide-w slide-h]} (slide-size (::bounds ctx))]
-        (ui/vscrollbar
-          (ui/vscroll
-            (ui/padding 10
-              (let [cap-height (quot slide-h 10)
-                    font-body  (font/make-with-cap-height typeface-regular cap-height)
-                    font-h1    (font/make-with-cap-height typeface-bold cap-height)
-                    full-len   (-> (count slides) (dec) (quot per-row) (inc) (* per-row))
-                    slides'    (concat slides (repeat (- full-len (count slides)) nil))]
-                (ui/with-context
-                  {:font-body font-body
-                   :font-h1   font-h1
-                   :font-ui   font-body
-                   :leading   (quot cap-height 2)
-                   :unit      (quot cap-height 10)}
-                  (ui/column
-                    (interpose (ui/gap 0 overview-padding)
-                      (for [row (partition per-row (core/zip (range) slides'))]
-                        (ui/height slide-h
-                          (ui/row
-                            (interpose (ui/gap overview-padding 0)
-                              (for [[idx slide] row
-                                    :let [slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
-                                                       (if (delay? slide) @slide slide))]]
-                                [:stretch 1
-                                 (when slide
-                                   (ui/clickable
-                                     {:on-click
-                                      (fn [_]
-                                        (reset! *mode :present)
-                                        (reset! *current idx))}
-                                     (ui/clip-rrect 4
-                                       (ui/dynamic ctx [{:hui/keys [hovered?]} ctx]
-                                         (if hovered?
-                                           (ui/stack
-                                             slide-comp
-                                             (ui/rect (paint/fill 0x20000000)
-                                               (ui/gap 0 0)))
-                                           slide-comp)))))]))))))))))))))))
-
 (def slide
   (ui/stack
     (ui/with-bounds ::bounds
-      (ui/dynamic ctx [cap-height (-> (::bounds ctx) :height (quot 10))]
+      (ui/dynamic ctx [cap-height (let [{:keys [width height]} (::bounds ctx)]
+                                    (quot (min height (/ width ratio)) 10))]
         (let [font-body (font/make-with-cap-height typeface-regular cap-height)
               font-h1   (font/make-with-cap-height typeface-bold cap-height)]
           (ui/with-context
@@ -258,7 +180,7 @@
              :leading   (quot cap-height 2)
              :unit      (quot cap-height 10)}
             (ui/rect (paint/fill 0xFFFFFFFF)
-              (ui/dynamic _ [current @*current]
+              (ui/dynamic _ [current (:current @*state)]
                 (let [slide (nth slides current)]
                   (cond-> slide
                     (delay? slide) deref))))))))
@@ -269,15 +191,25 @@
       (ui/halign 0.5
         (ui/valign 1
           (ui/padding 0 0 0 20
-            (controls/controls *current *mode slides)))))))
+            (controls/controls *state slides)))))))
 
 (def app
   (ui/default-theme {:face-ui typeface-regular}
     (ui/with-context {:fill-text (paint/fill 0xFF212B37)}
-      (ui/dynamic _ [mode @*mode]
-        (case mode
-          :overview overview
-          :present  slide)))))
+      (ui/key-listener
+        {:on-key-down
+         (fn [e]
+           (when (= :escape (:key e))
+             (case (:mode @*state)
+               :present  (swap! *state assoc
+                           :mode :overview
+                           :end  (core/now))
+               :overview (swap! *state assoc
+                           :start (core/now)))))}
+        (ui/dynamic _ [mode (:mode @*state)]
+          (case mode
+            :overview (overview/overview slides)
+            :present  slide))))))
 
 (redraw)
 
@@ -289,10 +221,9 @@
        :bg-color 0xFFFFFFFF}
       #'app))
   (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @*window)) (ColorSpace/getDisplayP3))
-  (reset! debug/*enabled? true)
+  ; (reset! debug/*enabled? true)
   (redraw))
 
 (comment
   (redraw)
-  (reset! *current 2)
   (window/window-rect @*window))

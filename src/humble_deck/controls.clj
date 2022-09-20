@@ -47,23 +47,23 @@
     (ui/height 14
       (ui/svg "resources/overview.svg"))))
 
-(defn controls [*current *mode slides]
+(defn controls [*state slides]
   (ui/key-listener
     {:on-key-down
      (fn [{:keys [key modifiers]}]
        (let [cmd? (modifiers :mac-command)]
          (cond
            (and cmd? (= :left key))
-           (swap! *current safe-add -1000000 0 (count slides))
+           (swap! *state update :current safe-add -1000000 0 (count slides))
 
            (and cmd? (= :right key))
-           (swap! *current safe-add 1000000 0 (count slides))
+           (swap! *state update :current safe-add 1000000 0 (count slides))
 
            (= :left key)
-           (swap! *current safe-add -1 0 (count slides))
+           (swap! *state update :current safe-add -1 0 (count slides))
 
            (#{:right :space} key)
-           (swap! *current safe-add 1 0 (count slides)))))}
+           (swap! *state update :current safe-add 1 0 (count slides)))))}
     (ui/dynamic _ [controls-visible? @*controls-visible?]
       (if (not controls-visible?)
         (ui/gap 0 0)
@@ -81,14 +81,14 @@
                   (ui/width 50
                     (ui/height 50
                       (ui/button #(do
-                                    (swap! *current safe-add -1 0 (count slides))
+                                    (swap! *state update :current safe-add -1 0 (count slides))
                                     (show-controls!))
                         icon-prev)))
                   
                   (ui/width 50
                     (ui/height 50
                       (ui/button #(do
-                                    (swap! *current safe-add 1 0 (count slides))
+                                    (swap! *state update :current safe-add 1 0 (count slides))
                                     (show-controls!))
                         icon-next)))
                                       
@@ -98,13 +98,8 @@
                   
                   (ui/width 50
                     (ui/height 50
-                      (ui/button #(do
-                                    (swap! *mode {:overview :present, :present :overview})
-                                    (show-controls!))
+                      (ui/button #(swap! *state assoc
+                                    :mode :overview
+                                    :end  (core/now))
                         icon-overview)))
-                      
-                  
-                  
-                  
-
                   )))))))))

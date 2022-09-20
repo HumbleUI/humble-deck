@@ -1,5 +1,6 @@
 (ns user
   (:require
+    [humble-deck.core :refer :all]
     [humble-deck.main :as main]
     [io.github.humbleui.app :as app]
     [io.github.humbleui.debug :as debug]
@@ -8,7 +9,7 @@
 
 (defn reset-window []
   (app/doui
-    (when-some [window @main/*window]
+    (when-some [window @*window]
       (window/set-window-position window 860 566)
       (window/set-content-size window 1422 800)
       #_(window/set-z-order window :floating))))
@@ -22,6 +23,6 @@
 (comment
   (reset-window)
   (app/doui
-    (window/window-rect @main/*window))
+    (window/window-rect @*window))
   (app/doui
-    (window/set-z-order @main/*window :normal)))
+    (window/set-z-order @*window :normal)))
