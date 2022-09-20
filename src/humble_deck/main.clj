@@ -36,11 +36,11 @@
                (ui/label line)))))))))
 
 (defn template-image [name]
-  (scaler/scaler ratio
+  (scaler/scaler
     (ui/image (io/file "slides" name))))
 
 (defn template-svg [name]
-  (scaler/scaler ratio
+  (scaler/scaler
     (ui/svg (io/file "slides" name))))
 
 (defn template-section [name]
@@ -170,8 +170,7 @@
 (def slide
   (ui/stack
     (ui/with-bounds ::bounds
-      (ui/dynamic ctx [cap-height (let [{:keys [width height]} (::bounds ctx)]
-                                    (quot (min height (/ width ratio)) 10))]
+      (ui/dynamic ctx [cap-height (-> ctx ::bounds :height (quot 10))]
         (let [font-body (font/make-with-cap-height typeface-regular cap-height)
               font-h1   (font/make-with-cap-height typeface-bold cap-height)]
           (ui/with-context

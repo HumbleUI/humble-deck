@@ -5,10 +5,6 @@
 
 (set! *warn-on-reflection* true)
 
-(def ratio
-  #_(/ 16 9)
-  (/ 3024 (- 1964 (* 2 37))))
-
 (defonce *state
   (atom {:current 0
          :mode    :present}))
