@@ -15,6 +15,9 @@
 (def typeface-bold
   (typeface/make-from-path "resources/CaseMicro-Bold.otf"))
 
+(def typeface-code
+  (typeface/make-from-path "resources/MartianMono-StdRg.otf"))
+
 (defonce *window
   (atom nil))
 

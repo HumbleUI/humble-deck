@@ -35,6 +35,19 @@
              (ui/halign 0.5
                (ui/label line)))))))))
 
+(defn template-code
+  ([s] (template-code {} s))
+  ([opts s]
+   (ui/center
+     (ui/dynamic ctx [{:keys [fill-text leading font-code]} ctx]
+       (ui/with-context
+         {:font-ui font-code}
+         (ui/column
+           (interpose (ui/gap 0 (* 1.5 leading))
+             (for [line (str/split s #"\n")]
+               (ui/halign 0
+                 (ui/label line))))))))))
+
 (defn template-image [name]
   (scaler/scaler
     (ui/image (io/file "slides" name))))
@@ -92,26 +105,23 @@
       [(delay (template-svg "title.svg"))
        
        (delay (template-svg "platforms 0.svg"))
-       (template-label "Web & Mobile are taken care of")
-       (template-label "Unified UI is a dream")
-       (template-label "Let’s focus on")
        (delay (template-svg "platforms 1.svg"))
-       (template-label "How to build desktop apps?")
+       (delay (template-svg "platforms 2.svg"))
+       (delay (template-svg "platforms 3.svg"))
        
        (delay
          (ui/stack
            (template-image "native.jpg")
-           (ui/dynamic ctx [{:keys [unit]} ctx]
-             (ui/with-context {:font-ui (font/make-with-cap-height typeface-regular (* 50 unit))}
-               (template-label "NATIVE")))))
+           (template-section "NATIVE")))
        
-       (template-list {:header "Native is" :range [1 2]} "$" "Organizationally Complicated")
-       (template-list {:header "Native is" :range [2 2]} "$$" "Organizationally Complicated")
-       (template-list {:header "Native is" :range [2 2]} "$$$" "Organizationally Complicated")
-       (template-list {:header "Native is" :range [2 2]} "$$$$" "Organizationally Complicated")
-       (template-list {:header "Native is" :range [2 2]} "$$$$ Expensive" "Organizationally Complicated")
-       (template-list {:header "Native is" :range [3 4]} "$$$$ Expensive" "Organizationally Complicated" "Kinda pointless")
+       (template-list {:header "Native is" :range [1 4]} "$$$$" "Organizationally Complicated" "Kinda pointless")
 
+       (template-label "QT")
+       (template-label "QT\nis C++")
+
+       (template-label "Java UIs")
+       (template-label "Java UIs\nare cursed 👻")
+      
        (delay
          (ui/rect (paint/fill 0xFF2C2E3A)
            (template-svg "electron.svg")))
@@ -125,36 +135,159 @@
        
        (template-label "2.\nPeople are OK\nwith non-native UI")
 
-       (delay (template-svg "buttons 0.svg"))
+       (delay
+         (ui/rect (paint/fill 0xFFF3F3F3)
+           (template-svg "buttons 0.svg")))
        (delay (template-svg "buttons 1.svg"))
        (template-label "3.\nThere is no good alternative")
        
-       (template-label "QT")
-       (template-label "QT\nis C++")
+       (delay (template-svg "humbleui.svg"))
        
-       (template-label "Java UIs")
-       (template-label "Java UIs\nare cursed 👻")
-       (template-label "But they don’t have to be!")
-       
-       (template-section "Let’s build a UI framework!")
-       
-       (template-list {:range [1 5]}
+       (template-list {:range [1 8] :header "Humble UI"}
+         "UI Framework"
          "For desktop apps"
-         "Take place of Electron"
-         "Clojure-centric"
-         "JVM-only, no JavaScript")
-
-       (template-list {:header "Why Clojure?" :range [1 4]}
-         "Dynamic"
+         "~ Electron"
+         "No browser"
+         "No DOM"
+         "No JS"
+         "JVM Clojure only")
+       
+       (template-section "DEMO")
+       
+       (template-section "Anatomy of UI framework")
+       
+       (delay (template-svg "architecture.svg"))
+       
+       (delay (template-svg "skia.svg"))
+       
+       (template-list {:header "Skia" :range [1 10]}
+         "Graphics library"
+         "Good enough for Chrome"
+         "& Android"
+         "& Flutter, Libre Office, Avalonia, ..."
          "Fast"
+         "Modern"
+         "OpenGL"
+         "DirectX 11, 12"
+         "Metal, Vulkan, WebGPU")
+       
+       (delay (template-svg "skija.svg"))
+       
+       (template-list {:header "Skija"}
+         "Skia bindings for Java")
+       
+       (delay (template-svg "jwm.svg"))
+       
+       (template-list {:header "JWM" :range [1 7]}
+         "Java Window Management"
+         "OS integration"
+         "Modern capabilities"
+         "Multi-monitor, VSync, Color Profiles, HiDPI"
+         "High-quality"
+         "Indistinguishable from native")
+       
+       (delay (template-svg "architecture.svg"))
+       
+       (template-section "Killer features")
+       
+       (template-list {:header "Simple layout" :range [1 3]}
+         "Parent imposes size"
+         "Child chooses their own size")
+       (template-list {:header "Simple layout" :range [3 3]}
+         "(-draw child size)"
+         "(-measure child space)"
+         "Child chooses their own size")
+       
+       (template-section "Composable components")
+       (delay (template-image "attributes.jpg"))
+       (delay (template-svg "buttons 2.svg"))
+       (template-code
+         "(defn button [opts]
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (clip-rrect (:radius opts)
+        (rect (:fill opts)
+          (padding (:padding opts)
+            (center
+              (label (:caption opts)))))))))")
+       (template-code
+         "(defn button [opts]
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (clip-diagonal (:radius opts)
+        (rect (:fill opts)
+          (padding (:padding opts)
+            (center
+              (label (:caption opts)))))))))")
+       (template-code
+         "(defn button [opts]
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (shadow (:shadow opts)
+        (clip-diagonal (:radius opts)
+          (rect (:fill opts)
+            (padding (:padding opts)
+              (center
+                (label (:caption opts))))))))))")
+       
+       (template-section "Sane text metrics")
+       (delay (template-svg "capsize 0.svg"))
+       (delay (template-svg "capsize 1.svg"))
+       (delay (template-svg "capsize 2.svg"))
+       
+       (template-list {:header "Also" :range [1 7]}
+         "Wide Color Gamut"
+         "120+ Hz"
+         "OkLab Gradients"
+         "Squircles"
+         "Pixel-perfect scaled graphics"
+         "...")
+
+       (template-list {:header "Clojure" :range [1 5]}
+         "❤️"
+         "High-level"
+         "Easy to use"
+         "Fast"
+         "Fast(er than JS)")
+       
+       (template-list {:header "Clojure" :range [5 7]}
+         "❤️"
+         "High-level"
+         "Easy to use"
+         "Fast(er than JS)"
+         "Threads"
          "REPL")
        
-       (template-section "REPL + UI is a match\nmade in heaven")
+       (template-section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
        (template-list {:header "REPL + UI" :range [2 5]}
-         "instant feedback loop"
+         "instant feedback"
          "play & experiment"
          "like figwheel/shadow-cljs"
          "but without browser")
+       
+       (template-list {:header "Status" :range [1 4]}
+         "Active development"
+         "Pre-alpha"
+         "Everything changes"
+         "Everything changes. A lot")
+       
+       (template-list {:header "Status" :range [4 4]}
+         "Active development"
+         "Pre-alpha"
+         "Everything changes. A lot")
+       
+       (template-list {:header "Missing pieces" :range [1 6]}
+         "JWM / OS integration (Java, C++)"
+         "State management"
+         "Rich text"
+         "Distribution"
+         "Testing and adoption")
+       
+       (delay (template-svg "links.svg"))
+       
+       (template-label "Thank you!")
+       
+       (template-label "Questions?")
        ])))
 
 (add-watch *state ::redraw
@@ -170,13 +303,15 @@
 (def slide
   (ui/stack
     (ui/with-bounds ::bounds
-      (ui/dynamic ctx [cap-height (-> ctx ::bounds :height (quot 10))]
+      (ui/dynamic ctx [cap-height (-> ctx ::bounds :height (quot 15))]
         (let [font-body (font/make-with-cap-height typeface-regular cap-height)
-              font-h1   (font/make-with-cap-height typeface-bold cap-height)]
+              font-h1   (font/make-with-cap-height typeface-bold cap-height)
+              font-code (font/make-with-cap-height typeface-code cap-height)]
           (ui/with-context
             {:font-body font-body
              :font-h1   font-h1
              :font-ui   font-body
+             :font-code font-code
              :leading   (quot cap-height 2)
              :unit      (quot cap-height 10)}
             (ui/rect (paint/fill 0xFFFFFFFF)
@@ -216,12 +351,12 @@
 (defn -main [& args]
   (reset! *window 
     (ui/start-app!
-      {:title    "Desktop UI with Clojure"
+      {:title    "Pitch 2.0"
        :mac-icon "resources/icon.icns"
        :bg-color 0xFFFFFFFF}
       #'app))
   (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @*window)) (ColorSpace/getDisplayP3))
-  ; (reset! debug/*enabled? true)
+  (reset! debug/*enabled? true)
   (redraw))
 
 (comment
