@@ -120,19 +120,22 @@
 (defn overview [slides]
   (ui/with-bounds ::bounds
     (ui/dynamic ctx [{:keys [scale]} ctx
+                     height (:height (::bounds ctx))
                      {:keys [per-row slide-w slide-h]} (slide-size (::bounds ctx) scale)]
       (zoomer *state per-row slide-w slide-h
         (ui/vscrollbar
           (ui/vscroll
             (ui/padding padding
               (let [cap-height (/ slide-h 15)
+                    font-default (font/make-with-cap-height typeface-regular (* scale 10 (/ slide-h height)))
                     font-body  (font/make-with-cap-height typeface-regular cap-height)
                     font-h1    (font/make-with-cap-height typeface-bold cap-height)
                     font-code (font/make-with-cap-height typeface-code cap-height)
                     full-len   (-> (count slides) (dec) (quot per-row) (inc) (* per-row))
                     slides'    (concat slides (repeat (- full-len (count slides)) nil))]
                 (ui/with-context
-                  {:font-body font-body
+                  {:font-default font-default
+                   :font-body font-body
                    :font-h1   font-h1
                    :font-ui   font-body
                    :font-code font-code

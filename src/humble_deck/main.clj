@@ -99,6 +99,80 @@
                   (ui/halign 0
                     label))))))))))
 
+(def *counter
+  (atom 1))
+
+(def *checkbox
+  (atom true))
+
+(def *slider
+  (atom {:value 50 :min 0 :max 100}))
+
+(def *text
+  (atom {:text ""
+         :placeholder "Edit me"}))
+
+(def demo
+  (ui/dynamic ctx [{:keys [font-default unit]} ctx]
+    (ui/with-context
+      {:font-ui font-default
+       :hui.button/padding-left (* unit 2)
+       :hui.button/padding-top  (* unit 2)
+       :hui.button/padding-right (* unit 2)
+       :hui.button/padding-bottom (* unit 2)
+       :hui.text-field/padding-left (* unit 2)
+       :hui.text-field/padding-top (* unit 2)
+       :hui.text-field/padding-right (* unit 2)
+       :hui.text-field/padding-bottom (* unit 2)}
+      (ui/center
+        (ui/column
+          (ui/halign 0.5
+            (ui/dynamic _ [counter @*counter]
+              (ui/label (str "Clicks: " counter))))
+          (ui/gap 0 (* unit 5))
+          (ui/halign 0.5
+            (ui/button (fn [] (swap! *counter inc) (redraw))
+              (ui/label "Click me")))
+          (ui/gap 0 (* unit 5))
+          (ui/halign 0.5
+            (ui/width (* unit 30)
+              (ui/text-field *text)))
+          (ui/gap 0 (* unit 5))
+          
+          (ui/halign 0.5
+            (ui/checkbox *checkbox
+              (ui/label "Check me")))
+          (ui/gap 0 (* unit 5))
+          (ui/halign 0.5
+            (ui/row
+              (ui/valign 0.5
+                (ui/toggle *checkbox))
+              (ui/gap (* unit 1) 0)
+              (ui/valign 0.5
+                (ui/label "Toggle me"))))
+          (ui/gap 0 (* unit 5))
+          (ui/halign 0.5
+            (ui/row
+              (ui/width (* unit 30)
+                (ui/slider *slider))
+              (ui/gap (* unit 2) 0)
+              (ui/width (* unit 5)
+                (ui/halign 1
+                  (ui/dynamic _ [value (:value @*slider)]
+                    (ui/label value))))))
+            
+          )))))
+
+(def debug
+  (ui/dynamic ctx [{:keys [unit]} ctx]
+    (ui/center
+      (ui/row
+        (ui/valign 0.5
+          (ui/toggle debug/*enabled?))
+        (ui/gap (* unit 2) 0)
+        (ui/valign 0.5
+          (ui/label "Debug info"))))))
+
 (def slides
   (vec
     (flatten
@@ -154,6 +228,8 @@
        
        (template-section "DEMO")
        
+       demo
+       
        (template-section "Anatomy of UI framework")
        
        (delay (template-svg "architecture.svg"))
@@ -170,6 +246,8 @@
          "OpenGL"
          "DirectX 11, 12"
          "Metal, Vulkan, WebGPU")
+       
+       debug
        
        (delay (template-svg "skija.svg"))
        
@@ -276,10 +354,11 @@
          "Pre-alpha"
          "Everything changes. A lot")
        
-       (template-list {:header "Missing pieces" :range [1 6]}
+       (template-list {:header "Missing pieces" :range [1 7]}
          "JWM / OS integration (Java, C++)"
          "State management"
          "Rich text"
+         "Viewports"
          "Distribution"
          "Testing and adoption")
        
@@ -303,12 +382,15 @@
 (def slide
   (ui/stack
     (ui/with-bounds ::bounds
-      (ui/dynamic ctx [cap-height (-> ctx ::bounds :height (quot 15))]
-        (let [font-body (font/make-with-cap-height typeface-regular cap-height)
-              font-h1   (font/make-with-cap-height typeface-bold cap-height)
-              font-code (font/make-with-cap-height typeface-code cap-height)]
+      (ui/dynamic ctx [scale (:scale ctx)
+                       cap-height (-> ctx ::bounds :height (quot 15))]
+        (let [font-default (font/make-with-cap-height typeface-regular (* scale 10))
+              font-body    (font/make-with-cap-height typeface-regular cap-height)
+              font-h1      (font/make-with-cap-height typeface-bold cap-height)
+              font-code    (font/make-with-cap-height typeface-code cap-height)]
           (ui/with-context
-            {:font-body font-body
+            {:font-default font-default
+             :font-body font-body
              :font-h1   font-h1
              :font-ui   font-body
              :font-code font-code
@@ -356,7 +438,7 @@
        :bg-color 0xFFFFFFFF}
       #'app))
   (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @*window)) (ColorSpace/getDisplayP3))
-  (reset! debug/*enabled? true)
+  ; (reset! debug/*enabled? true)
   (redraw))
 
 (comment
