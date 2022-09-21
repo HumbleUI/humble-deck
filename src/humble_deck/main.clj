@@ -130,10 +130,12 @@
             (ui/dynamic _ [counter @*counter]
               (ui/label (str "Clicks: " counter))))
           (ui/gap 0 (* unit 5))
+          
           (ui/halign 0.5
             (ui/button (fn [] (swap! *counter inc) (redraw))
               (ui/label "Click me")))
           (ui/gap 0 (* unit 5))
+          
           (ui/halign 0.5
             (ui/width (* unit 30)
               (ui/text-field *text)))
@@ -143,6 +145,7 @@
             (ui/checkbox *checkbox
               (ui/label "Check me")))
           (ui/gap 0 (* unit 5))
+          
           (ui/halign 0.5
             (ui/row
               (ui/valign 0.5
@@ -151,6 +154,7 @@
               (ui/valign 0.5
                 (ui/label "Toggle me"))))
           (ui/gap 0 (* unit 5))
+          
           (ui/halign 0.5
             (ui/row
               (ui/width (* unit 30)
@@ -312,10 +316,11 @@
        (delay (template-svg "capsize 0.svg"))
        (delay (template-svg "capsize 1.svg"))
        (delay (template-svg "capsize 2.svg"))
+       (delay (template-svg "capsize 3.svg"))
        
        (template-list {:header "Also" :range [1 7]}
          "Wide Color Gamut"
-         "120+ Hz"
+         "OpenType features"
          "OkLab Gradients"
          "Squircles"
          "Pixel-perfect scaled graphics"
@@ -336,9 +341,11 @@
          "Threads"
          "REPL")
        
-       (template-section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
+       ;; (ui/rect (paint/fill 0xFF00EEEE)
+        (template-section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
+       
        (template-list {:header "REPL + UI" :range [2 5]}
-         "instant feedback"
+         "Instant Feedback"
          "play & experiment"
          "like figwheel/shadow-cljs"
          "but without browser")
