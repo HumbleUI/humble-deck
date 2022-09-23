@@ -59,10 +59,10 @@
            (and cmd? (= :right key))
            (swap! *state update :current safe-add 1000000 0 (count slides))
 
-           (= :left key)
+           (#{:up :left :page-up} key)
            (swap! *state update :current safe-add -1 0 (count slides))
 
-           (#{:right :space} key)
+           (#{:down :right :page-down :space} key)
            (swap! *state update :current safe-add 1 0 (count slides)))))}
     (ui/dynamic _ [controls-visible? @*controls-visible?]
       (if (not controls-visible?)
