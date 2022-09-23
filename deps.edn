@@ -1,6 +1,6 @@
 {:deps
  {org.clojure/clojure         {:mvn/version "1.11.1"}
-  io.github.humbleui/humbleui {:git/sha "77a06b12ebd80b40f046f63e3061a023c24cd6f8"}}
+  io.github.humbleui/humbleui {:git/sha "4af3e9104f1f3a4e392a813edf026f0b694eefc1"}}
  :aliases
  {:dev {:extra-paths ["dev"]
         :extra-deps {nrepl/nrepl {:mvn/version "1.0.0"}}}}}

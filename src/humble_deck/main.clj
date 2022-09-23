@@ -151,8 +151,10 @@
               (ui/valign 0.5
                 (ui/toggle *checkbox))
               (ui/gap (* unit 1) 0)
-              (ui/valign 0.5
-                (ui/label "Toggle me"))))
+              (ui/clickable
+                {:on-click (fn [_] (swap! *checkbox not))}
+                (ui/valign 0.5
+                  (ui/label "Toggle me")))))
           (ui/gap 0 (* unit 5))
           
           (ui/halign 0.5
@@ -342,7 +344,7 @@
          "REPL")
        
        ;; (ui/rect (paint/fill 0xFF00EEEE)
-        (template-section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
+       (template-section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
        
        (template-list {:header "REPL + UI" :range [2 5]}
          "Instant Feedback"
@@ -390,11 +392,11 @@
   (ui/stack
     (ui/with-bounds ::bounds
       (ui/dynamic ctx [scale (:scale ctx)
-                       cap-height (-> ctx ::bounds :height (quot 30))]
+                       cap-height (-> ctx ::bounds :height (* scale) (quot 30))]
         (let [font-default (font/make-with-cap-height typeface-regular (* scale 10))
-              font-body    (font/make-with-cap-height typeface-regular (* scale cap-height))
-              font-h1      (font/make-with-cap-height typeface-bold    (* scale cap-height))
-              font-code    (font/make-with-cap-height typeface-code    (* scale cap-height))]
+              font-body    (font/make-with-cap-height typeface-regular cap-height)
+              font-h1      (font/make-with-cap-height typeface-bold    cap-height)
+              font-code    (font/make-with-cap-height typeface-code    cap-height)]
           (ui/with-context
             {:font-default font-default
              :font-body font-body
@@ -420,16 +422,7 @@
 (def app
   (ui/default-theme {:face-ui typeface-regular}
     (ui/with-context {:fill-text (paint/fill 0xFF212B37)}
-      (ui/key-listener
-        {:on-key-down
-         (fn [e]
-           (when (= :escape (:key e))
-             (case (:mode @*state)
-               :present  (swap! *state assoc
-                           :mode :overview
-                           :end  (core/now))
-               :overview (swap! *state assoc
-                           :start (core/now)))))}
+      (controls/key-listener *state slides
         (ui/dynamic _ [mode (:mode @*state)]
           (case mode
             :overview (overview/overview slides)
