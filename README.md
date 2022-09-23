@@ -2,6 +2,8 @@ Presentation Software built with [Humble UI](https://github.com/HumbleUI/HumbleU
 
 ![](./extras/screenshot.png)
 
+![](./extras/screenshot2.png)
+
 # Running
 
 ```sh
