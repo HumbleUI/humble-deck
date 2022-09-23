@@ -390,11 +390,11 @@
   (ui/stack
     (ui/with-bounds ::bounds
       (ui/dynamic ctx [scale (:scale ctx)
-                       cap-height (-> ctx ::bounds :height (quot 15))]
+                       cap-height (-> ctx ::bounds :height (quot 30))]
         (let [font-default (font/make-with-cap-height typeface-regular (* scale 10))
-              font-body    (font/make-with-cap-height typeface-regular cap-height)
-              font-h1      (font/make-with-cap-height typeface-bold cap-height)
-              font-code    (font/make-with-cap-height typeface-code cap-height)]
+              font-body    (font/make-with-cap-height typeface-regular (* scale cap-height))
+              font-h1      (font/make-with-cap-height typeface-bold    (* scale cap-height))
+              font-code    (font/make-with-cap-height typeface-code    (* scale cap-height))]
           (ui/with-context
             {:font-default font-default
              :font-body font-body

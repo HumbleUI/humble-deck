@@ -126,11 +126,11 @@
         (ui/vscrollbar
           (ui/vscroll
             (ui/padding padding
-              (let [cap-height (/ slide-h 15)
+              (let [cap-height (/ slide-h 30)
                     font-default (font/make-with-cap-height typeface-regular (* scale 10 (/ slide-h height)))
-                    font-body  (font/make-with-cap-height typeface-regular cap-height)
-                    font-h1    (font/make-with-cap-height typeface-bold cap-height)
-                    font-code (font/make-with-cap-height typeface-code cap-height)
+                    font-body  (font/make-with-cap-height typeface-regular (* scale cap-height))
+                    font-h1    (font/make-with-cap-height typeface-bold    (* scale cap-height))
+                    font-code (font/make-with-cap-height typeface-code     (* scale cap-height))
                     full-len   (-> (count slides) (dec) (quot per-row) (inc) (* per-row))
                     slides'    (concat slides (repeat (- full-len (count slides)) nil))]
                 (ui/with-context
