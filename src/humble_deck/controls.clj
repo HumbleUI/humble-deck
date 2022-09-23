@@ -55,10 +55,10 @@
   (reset! *controls-timer nil))
 
 (defn show-controls! []
-  (reset! *controls-visible? true)
   (when-some [cancel-timer @*controls-timer]
     (cancel-timer))
-  (reset! *controls-timer (core/schedule hide-controls! 5000)))
+  (reset! *controls-timer (core/schedule hide-controls! 5000))
+  (not= @*controls-visible? (reset! *controls-visible? true)))
 
 (def icon-prev
   (ui/width 14
