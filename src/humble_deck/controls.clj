@@ -3,7 +3,8 @@
     [io.github.humbleui.core :as core]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
-    [io.github.humbleui.ui :as ui])
+    [io.github.humbleui.ui :as ui]
+    [io.github.humbleui.window :as window])
   (:import
     [io.github.humbleui.skija FilterTileMode ImageFilter]))
 
@@ -60,58 +61,82 @@
   (reset! *controls-timer (core/schedule hide-controls! 5000))
   (not= @*controls-visible? (reset! *controls-visible? true)))
 
-(def icon-prev
+(defn template-icon [path]
   (ui/width 14
     (ui/height 14
-      (ui/svg "resources/prev.svg"))))
+      (ui/svg (str "resources/" path)))))
+
+(def icon-prev
+  (template-icon "prev.svg"))
 
 (def icon-next
-  (ui/width 14
-    (ui/height 14
-      (ui/svg "resources/next.svg"))))
+  (template-icon "next.svg"))
 
 (def icon-overview
-  (ui/width 14
-    (ui/height 14
-      (ui/svg "resources/overview.svg"))))
+  (template-icon "overview.svg"))
+
+(def icon-full-screen
+  (template-icon "fullscreen.svg"))
+
+(def icon-windowed
+  (template-icon "windowed.svg"))
+
+(defmacro template-icon-button [icon & on-click]
+  `(ui/width 40
+     (ui/height 40
+       (ui/button (fn [] ~@on-click)
+         ~icon))))
 
 (defn controls [*state slides]
-  (ui/dynamic _ [controls-visible? @*controls-visible?]
-    (if (not controls-visible?)
-      (ui/gap 0 0)
-      (ui/with-context
-        {:fill-text                (paint/fill 0xCCFFFFFF)
-         :hui.button/bg-active     (paint/fill 0x80000000)
-         :hui.button/bg-hovered    (paint/fill 0x40000000)
-         :hui.button/bg            (paint/fill 0x00000000)
-         :hui.button/border-radius 0}
-        (ui/clip-rrect 8
-          (ui/backdrop (ImageFilter/makeBlur 10 10 FilterTileMode/CLAMP)
-            (ui/rect
-              (paint/fill 0x60000000)
-              (ui/row
-                (ui/width 50
-                  (ui/height 50
-                    (ui/button #(do
-                                  (swap! *state update :current safe-add -1 0 (count slides))
-                                  (show-controls!))
-                      icon-prev)))
+  (ui/mouse-listener
+    {:on-move (fn [_] (show-controls!))
+     :on-over (fn [_] (show-controls!))
+     :on-out  (fn [_] (hide-controls!))}
+    (ui/valign 1
+      (ui/dynamic _ [controls-visible? @*controls-visible?]
+        (if (not controls-visible?)
+          (ui/gap 0 0)
+          (ui/with-context
+            {:fill-text                 (paint/fill 0xCCFFFFFF)
+             :hui.button/bg-active      (paint/fill 0x80000000)
+             :hui.button/bg-hovered     (paint/fill 0x40000000)
+             :hui.button/bg             (paint/fill 0x00000000)
+             :hui.button/padding-left   0
+             :hui.button/padding-top    0
+             :hui.button/padding-right  0
+             :hui.button/padding-bottom 0
+             :hui.button/border-radius  0}
+            (ui/backdrop (ImageFilter/makeBlur 20 20 FilterTileMode/CLAMP)
+              (ui/rect (paint/fill 0x58000000)
+                (ui/row
+                  (template-icon-button icon-prev
+                    (swap! *state update :current safe-add -1 0 (count slides))
+                    (show-controls!))
+
+                  (template-icon-button icon-next
+                    (swap! *state update :current safe-add 1 0 (count slides))
+                    (show-controls!))
+
+                  (ui/padding 14 0
+                    (ui/valign 0.5
+                      (ui/max-width
+                        [(ui/label "888 / 888")]
+                        (ui/halign 0.5
+                          (ui/dynamic _ [current (:current @*state)]
+                            (ui/label (format "%d / %d" (inc current) (count slides))))))))
                   
-                (ui/width 50
-                  (ui/height 50
-                    (ui/button #(do
-                                  (swap! *state update :current safe-add 1 0 (count slides))
-                                  (show-controls!))
-                      icon-next)))
-                                      
-                #_(ui/width 70
-                    (ui/center
-                      (ui/label (format "%d / %d" (inc current) (count slides)))))
+                  [:stretch 1 nil]
+                      
+                  (template-icon-button icon-overview
+                    (swap! *state assoc
+                      :mode :overview
+                      :end  (core/now)))
                   
-                (ui/width 50
-                  (ui/height 50
-                    (ui/button #(swap! *state assoc
-                                  :mode :overview
-                                  :end  (core/now))
-                      icon-overview)))
-                ))))))))
+                  (ui/dynamic ctx [window       (:window ctx)
+                                   full-screen? (window/full-screen? window)]
+                    (if full-screen?
+                      (template-icon-button icon-windowed
+                        (window/set-full-screen window false))
+                      (template-icon-button icon-full-screen
+                        (window/set-full-screen window true)))))))))))))
+ 

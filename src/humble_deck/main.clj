@@ -113,17 +113,10 @@
          :placeholder "Edit me"}))
 
 (def demo
-  (ui/dynamic ctx [{:keys [font-default unit]} ctx]
+  (ui/dynamic ctx [{:keys [font-default unit scale]} ctx]
+    (let [unit (* 1 scale)]
     (ui/with-context
-      {:font-ui font-default
-       :hui.button/padding-left (* unit 2)
-       :hui.button/padding-top  (* unit 2)
-       :hui.button/padding-right (* unit 2)
-       :hui.button/padding-bottom (* unit 2)
-       :hui.text-field/padding-left (* unit 2)
-       :hui.text-field/padding-top (* unit 2)
-       :hui.text-field/padding-right (* unit 2)
-       :hui.text-field/padding-bottom (* unit 2)}
+      {:font-ui font-default}
       (ui/center
         (ui/column
           (ui/halign 0.5
@@ -167,7 +160,7 @@
                   (ui/dynamic _ [value (:value @*slider)]
                     (ui/label value))))))
             
-          )))))
+          ))))))
 
 (def debug
   (ui/dynamic ctx [{:keys [unit]} ctx]
@@ -410,14 +403,7 @@
                 (let [slide (nth slides current)]
                   (cond-> slide
                     (delay? slide) deref))))))))
-    (ui/mouse-listener
-      {:on-move (fn [_] (controls/show-controls!))
-       :on-over (fn [_] (controls/show-controls!))
-       :on-out  (fn [_] (controls/hide-controls!))}
-      (ui/halign 0.5
-        (ui/valign 1
-          (ui/padding 0 0 0 20
-            (controls/controls *state slides)))))))
+    (controls/controls *state slides)))
 
 (def app
   (ui/default-theme {:face-ui typeface-regular}
@@ -433,7 +419,7 @@
 (defn -main [& args]
   (reset! *window 
     (ui/start-app!
-      {:title    "Pitch 2.0"
+      {:title    "Humble Deck"
        :mac-icon "resources/icon.icns"
        :bg-color 0xFFFFFFFF}
       #'app))
