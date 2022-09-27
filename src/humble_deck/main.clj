@@ -211,7 +211,7 @@
        (delay
          (ui/rect (paint/fill 0xFFF3F3F3)
            (template-svg "buttons 0.svg")))
-       (delay (template-svg "buttons 1.svg"))
+       (delay (template-image "buttons 1.jpg"))
        (template-label "3.\nThere is no good alternative")
        
        (delay (template-svg "humbleui.svg"))

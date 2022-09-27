@@ -4,7 +4,8 @@
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
     [io.github.humbleui.ui :as ui]
-    [io.github.humbleui.window :as window])
+    [io.github.humbleui.window :as window]
+    [humble-deck.core :refer :all])
   (:import
     [io.github.humbleui.skija FilterTileMode ImageFilter]))
 
@@ -87,6 +88,16 @@
        (ui/button (fn [] ~@on-click)
          ~icon))))
 
+(defonce *slider
+  (atom {:value 1
+         :min   1
+         :max   111}))
+
+(add-watch *slider ::rewind
+  (fn [_ _ old new]
+    (when (not= (:value old) (:value new))
+      (swap! *state assoc :current (dec (:value new))))))
+
 (defn controls [*state slides]
   (ui/mouse-listener
     {:on-move (fn [_] (show-controls!))
@@ -106,8 +117,8 @@
              :hui.button/padding-right  0
              :hui.button/padding-bottom 0
              :hui.button/border-radius  0}
-            (ui/backdrop (ImageFilter/makeBlur 20 20 FilterTileMode/CLAMP)
-              (ui/rect (paint/fill 0x58000000)
+            (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
+              (ui/rect (paint/fill 0x50000000)
                 (ui/row
                   (template-icon-button icon-prev
                     (swap! *state update :current safe-add -1 0 (count slides))
@@ -121,11 +132,12 @@
                     (ui/valign 0.5
                       (ui/max-width
                         [(ui/label "888 / 888")]
-                        (ui/halign 0.5
+                        (ui/halign 0
                           (ui/dynamic _ [current (:current @*state)]
                             (ui/label (format "%d / %d" (inc current) (count slides))))))))
                   
-                  [:stretch 1 nil]
+                  [:stretch 1
+                   (ui/slider *slider)]
                       
                   (template-icon-button icon-overview
                     (swap! *state assoc
