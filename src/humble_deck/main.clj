@@ -35,5 +35,4 @@
          :bg-color 0xFFFFFFFF}
         state/*app)))
   (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
-  ; (reset! debug/*enabled? true)
   (state/redraw))
