@@ -7,8 +7,6 @@
     [io.github.humbleui.types IPoint IRect]
     [java.lang AutoCloseable]))
 
-(set! *warn-on-reflection* true)
-
 (core/deftype+ Scaler [child]
   protocols/IComponent
   (-measure [_ ctx cs]

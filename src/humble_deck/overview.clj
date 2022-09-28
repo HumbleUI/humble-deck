@@ -1,28 +1,19 @@
 (ns humble-deck.overview
   (:require
-    [clojure.java.io :as io]
     [clojure.math :as math]
-    [clojure.string :as str]
-    [humble-deck.controls :as controls]
-    [humble-deck.core :refer :all]
-    [humble-deck.scaler :as scaler]
+    [humble-deck.resources :as resources]
+    [humble-deck.slides :as slides]
+    [humble-deck.state :as state]
+    [humble-deck.templates :as templates]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
-    [io.github.humbleui.debug :as debug]
     [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
-    [io.github.humbleui.typeface :as typeface]
     [io.github.humbleui.ui :as ui]
     [io.github.humbleui.window :as window])
   (:import
-    [io.github.humbleui.types IPoint IRect]
-    [io.github.humbleui.skija Color ColorSpace]
-    [io.github.humbleui.jwm Window]
-    [io.github.humbleui.jwm.skija LayerMetalSkija]
     [java.lang AutoCloseable]))
-
-(set! *warn-on-reflection* true)
 
 (def padding
   10)
@@ -47,25 +38,25 @@
      :slide-w slide-w
      :slide-h slide-h}))
 
-(core/deftype+ Zoomer [*state per-row slide-w slide-h child bg]
+(core/deftype+ Zoomer [per-row slide-w slide-h child bg]
   protocols/IComponent
   (-measure [_ ctx cs]
     (core/measure child ctx cs))
   
   (-draw [_ ctx rect ^Canvas canvas]
     (canvas/draw-rect canvas rect bg)
-    (let [{:keys [current start end]} @*state]
-      (if (or start end)
+    (let [{:keys [current animation-start animation-end]} @state/*state]
+      (if (or animation-start animation-end)
         (let [progress (cond
-                         start
-                         (min 1 (/ (- (core/now) start) zoom-time))
+                         animation-start
+                         (min 1 (/ (- (core/now) animation-start) zoom-time))
                        
-                         end
-                         (max 0 (- 1 (/ (- (core/now) end) zoom-time))))]
-          (when (and start (>= progress 1))
-            (swap! *state assoc :mode :present :start nil))
-          (when (and end (<= progress 0))
-            (swap! *state assoc :end nil))
+                         animation-end
+                         (max 0 (- 1 (/ (- (core/now) animation-end) zoom-time))))]
+          (when (and animation-start (>= progress 1))
+            (swap! state/*state assoc :mode :present :animation-start nil))
+          (when (and animation-end (<= progress 0))
+            (swap! state/*state assoc :animation-end nil))
           (let [{:keys [scale window]} ctx
                 row            (quot current per-row)
                 column         (mod current per-row)
@@ -114,25 +105,25 @@
   (close [_]
     (core/child-close child)))
 
-(defn zoomer [*state per-row slide-w slide-h child]
-  (->Zoomer *state per-row slide-w slide-h child (paint/fill 0xFFF0F0F0)))
+(defn zoomer [per-row slide-w slide-h child]
+  (->Zoomer per-row slide-w slide-h child (paint/fill 0xFFF0F0F0)))
 
-(defn overview [slides]
+(def overview
   (ui/with-bounds ::bounds
     (ui/dynamic ctx [{:keys [scale]} ctx
                      height (:height (::bounds ctx))
                      {:keys [per-row slide-w slide-h]} (slide-size (::bounds ctx) scale)]
-      (zoomer *state per-row slide-w slide-h
+      (zoomer per-row slide-w slide-h
         (ui/vscrollbar
           (ui/vscroll
             (ui/padding padding
               (let [cap-height (-> slide-h (* scale) (/ 30))
-                    font-default (font/make-with-cap-height typeface-regular (* scale 10 (/ slide-h height)))
-                    font-body  (font/make-with-cap-height typeface-regular cap-height)
-                    font-h1    (font/make-with-cap-height typeface-bold    cap-height)
-                    font-code (font/make-with-cap-height typeface-code     cap-height)
-                    full-len   (-> (count slides) (dec) (quot per-row) (inc) (* per-row))
-                    slides'    (concat slides (repeat (- full-len (count slides)) nil))]
+                    font-default (font/make-with-cap-height resources/typeface-regular (* scale 10 (/ slide-h height)))
+                    font-body  (font/make-with-cap-height resources/typeface-regular cap-height)
+                    font-h1    (font/make-with-cap-height resources/typeface-bold    cap-height)
+                    font-code (font/make-with-cap-height resources/typeface-code     cap-height)
+                    full-len   (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
+                    slides'    (concat slides/slides (repeat (- full-len (count slides/slides)) nil))]
                 (ui/with-context
                   {:font-default font-default
                    :font-body font-body
@@ -156,12 +147,12 @@
                                     (ui/clickable
                                       {:on-click
                                        (fn [_]
-                                         (swap! *state assoc
+                                         (swap! state/*state assoc
                                            :current idx
-                                           :start   (core/now)))}
+                                           :animation-start (core/now)))}
                                       (ui/clip-rrect 4
                                         (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
-                                                         {:keys [start end mode]} @*state]
+                                                         {:keys [start end mode]} @state/*state]
                                           (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
                                             (ui/stack
                                               slide-comp

@@ -1,13 +1,6 @@
 <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_22_22)">
-<rect opacity="0.8" width="60" height="60" rx="15" fill="white" fill-opacity="0.9"/>
-<rect opacity="0.8" y="80" width="60" height="60" rx="15" fill="white" fill-opacity="0.9"/>
-<rect opacity="0.8" x="80" width="60" height="60" rx="15" fill="white" fill-opacity="0.9"/>
-<rect opacity="0.8" x="80" y="80" width="60" height="60" rx="15" fill="white" fill-opacity="0.9"/>
-</g>
-<defs>
-<clipPath id="clip0_22_22">
-<rect width="140" height="140" fill="white"/>
-</clipPath>
-</defs>
+<rect opacity="0.8" y="10" width="65" height="55" rx="15" fill="white"/>
+<rect opacity="0.8" y="75" width="65" height="55" rx="15" fill="white"/>
+<rect opacity="0.8" x="75" y="10" width="65" height="55" rx="15" fill="white"/>
+<rect opacity="0.8" x="75" y="75" width="65" height="55" rx="15" fill="white"/>
 </svg>
