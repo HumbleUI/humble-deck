@@ -29,19 +29,28 @@
   (ui/key-listener
     {:on-key-down
      (fn [{:keys [key modifiers]}]
-       (let [cmd?   (modifiers :mac-command)
-             window @state/*window]
+       (let [prev-key? #{:up :left :page-up}
+             next-key? #{:down :right :page-down :space}
+             cmd?    (modifiers :mac-command)
+             option? (modifiers :mac-option)
+             window  @state/*window]
          (cond
-           (and cmd? (= :left key))
+           (and cmd? (prev-key? key))
            (swap! state/*state update :current safe-add -1000000 0 (count slides/slides))
 
-           (and cmd? (= :right key))
+           (and cmd? (next-key? key))
            (swap! state/*state update :current safe-add 1000000 0 (count slides/slides))
 
-           (#{:up :left :page-up} key)
+           (and option? (prev-key? key))
+           (swap! state/*state update :current safe-add -10 0 (count slides/slides))
+           
+           (and option? (next-key? key))
+           (swap! state/*state update :current safe-add 10 0 (count slides/slides))
+           
+           (prev-key? key)
            (swap! state/*state update :current safe-add -1 0 (count slides/slides))
 
-           (#{:down :right :page-down :space} key)
+           (next-key? key)
            (swap! state/*state update :current safe-add 1 0 (count slides/slides))
            
            (= :t key)
@@ -83,10 +92,19 @@
   3)
 
 (def thumb-h
-  18)
+  20)
+
+(def thumb-r
+  1.5)
+
+(def thumb-padding
+  3)
 
 (def track-h
   3)
+
+(def track-r
+  1.5)
 
 (core/deftype+ SliderThumb []
   protocols/IComponent
@@ -96,11 +114,9 @@
 
   (-draw [this ctx rect ^Canvas canvas]
     (let [{:keys [scale]} ctx
-          rrect (core/rrect-xywh (:x rect) (:y rect) (:width rect) (:height rect) (* scale 4))]
-      (with-open [fill   (paint/fill 0xCCFFFFFF)
-                  stroke (paint/stroke 0xCCFFFFFF (* scale 2))]
-        (canvas/draw-rect canvas rrect fill)
-        #_(canvas/draw-rect canvas rrect stroke))))
+          rrect (core/rrect-xywh (:x rect) (:y rect) (:width rect) (:height rect) (* scale thumb-r))]
+      (with-open [fill (paint/fill 0xE0FFFFFF)]
+        (canvas/draw-rect canvas rrect fill))))
   
   (-event [this ctx event])
 
@@ -116,13 +132,13 @@
           track-h      (* scale track-h)
           half-track-h (/ track-h 2)
           half-thumb-w (-> thumb-w (* scale) (/ 2))
-          x      (- (:x rect) half-track-h)
-          y      (+ (:y rect) (/ (:height rect) 2) (- half-track-h))
-          w      (+ (:width rect) half-track-h (- half-thumb-w) (- (* 2 scale)))
-          r      half-track-h
-          rect   (core/rrect-xywh x y w track-h r 0 0 r)]
+          x            (- (:x rect) half-track-h)
+          y            (+ (:y rect) (/ (:height rect) 2) (- half-track-h))
+          w            (+ (:width rect) half-track-h (- half-thumb-w) (- (* thumb-padding scale)))
+          track-r      (* scale track-r)
+          rect         (core/rrect-xywh x y w track-h track-r 0 0 track-r)]
       (when (pos? w)
-        (with-open [fill (paint/fill 0xCCFFFFFF)]
+        (with-open [fill (paint/fill 0xE0FFFFFF)]
           (canvas/draw-rect canvas rect fill)))))
   
   (-event [this ctx event])
@@ -139,19 +155,18 @@
           track-h      (* scale track-h)
           half-track-h (/ track-h 2)
           half-thumb-w (-> thumb-w (* scale) (/ 2))
-          x      (+ (:x rect) half-thumb-w (* 2 scale))
-          y      (+ (:y rect) (/ (:height rect) 2) (- half-track-h))
-          w      (+ (:width rect) half-track-h (- half-thumb-w) (- (* 2 scale)))
-          r      half-track-h
-          rect   (core/rrect-xywh x y w track-h 0 r r 0)]
+          x            (+ (:x rect) half-thumb-w (* thumb-padding scale))
+          y            (+ (:y rect) (/ (:height rect) 2) (- half-track-h))
+          w            (+ (:width rect) half-track-h (- half-thumb-w) (- (* thumb-padding scale)))
+          track-r      (* scale track-r)
+          rect         (core/rrect-xywh x y w track-h 0 track-r track-r 0)]
       (when (pos? w)
-        (with-open [fill (paint/fill 0x60FFFFFF)]
+        (with-open [fill (paint/fill 0x50FFFFFF)]
           (canvas/draw-rect canvas rect fill)))))
   
   (-event [this ctx event])
 
   (-iterate [this ctx cb]))
-
 
 (def controls
   (ui/mouse-listener
@@ -163,7 +178,7 @@
         (if (not controls?)
           (ui/gap 0 0)
           (ui/with-context
-            {:fill-text                 (paint/fill 0xCCFFFFFF)
+            {:fill-text                 (paint/fill 0xE0FFFFFF)
              :hui.button/bg-active      (paint/fill 0x80000000)
              :hui.button/bg-hovered     (paint/fill 0x40000000)
              :hui.button/bg             (paint/fill 0x00000000)
