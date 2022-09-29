@@ -151,12 +151,17 @@
      "Graphics library"
      "Good enough for Chrome"
      "& Android"
-     "& Flutter, Libre Office, Avalonia, ..."
+     ["& Flutter"
+      "& Flutter, Libre Office"
+      "& Flutter, Libre Office, Avalonia, ..."]
      "Fast"
      "Modern"
      "OpenGL"
-     "DirectX 11, 12"
-     "Metal, Vulkan, WebGPU")
+     ["DirectX 11"
+      "DirectX 11, 12"]
+     ["Metal"
+      "Metal, Vulkan"
+      "Metal, Vulkan, WebGPU"])
    
    [debug]
    
@@ -171,7 +176,10 @@
      "Java Window Management"
      "OS integration"
      "Modern capabilities"
-     "Multi-monitor, VSync, Color Profiles, HiDPI"
+     ["Multi-monitor"
+      "Multi-monitor, VSync"
+      "Multi-monitor, VSync, Color Profiles"
+      "Multi-monitor, VSync, Color Profiles, HiDPI"]
      "High-quality"
      "Indistinguishable from native")
    
@@ -181,8 +189,8 @@
    
    (templates/list "Simple layout"
      "Parent imposes size"
-     "Child chooses their own size"
      "(-draw child size)"
+     "Child chooses their own size"
      "(-measure child space)")
    
    [(templates/section "Composable components")]
@@ -190,7 +198,7 @@
    [(templates/svg "buttons 2.svg")]
    
    [(templates/code
-     "(defn button [opts]
+     "(defn button [opts])))])])
 (hoverable {}
 (clickable {:on-click (:on-click opts)}
   (clip-rrect (:radius opts)
@@ -220,10 +228,10 @@
    
    [(templates/section "Sane text metrics")]
    
-   [(templates/svg "capsize 0.svg")
-    (templates/svg "capsize 1.svg")
-    (templates/svg "capsize 2.svg")
-    (templates/svg "capsize 3.svg")]
+   [(templates/svg "capsize 0.svg")]
+   [(templates/svg "capsize 1.svg")]
+   [(templates/svg "capsize 2.svg")]
+   [(templates/svg "capsize 3.svg")]
    
    (templates/list "Also"
      "Wide Color Gamut"

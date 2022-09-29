@@ -68,25 +68,31 @@
           (ui/gap (* 2 unit) (* 2 unit)))))))
 
 (defn list [header & lines]
-  (let [labels (cons
-                 (ui/dynamic ctx [{:keys [font-h1]} ctx]
-                       (ui/with-context {:font-ui font-h1}
-                         (ui/label header)))
+  (let [labels (concat
+                 [[(ui/dynamic ctx [{:keys [font-h1]} ctx]
+                     (ui/with-context {:font-ui font-h1}
+                       (ui/label header)))]]
                  (map
-                   #(ui/dynamic ctx [{:keys [unit]} ctx]
-                      (ui/row
-                        icon-bullet
-                        (ui/gap (* unit 3) 0)
-                        (ui/label %)))
+                   (fn [line]
+                     (mapv
+                       #(ui/dynamic ctx [{:keys [unit]} ctx]
+                          (ui/row
+                            icon-bullet
+                            (ui/gap (* unit 3) 0)
+                            (ui/label %)))
+                       (if (sequential? line) line [line])))
                    lines))]
     (vec
-      (for [i (range 1 (inc (count labels)))]
+      (for [i (range 0 (count labels))
+            j (range 0 (count (nth labels i)))]
         (delay
           (ui/center
-            (ui/max-width labels
+            (ui/max-width (flatten labels)
               (ui/dynamic ctx [{:keys [leading]} ctx]
                 (ui/column
                   (interpose (ui/gap 0 leading)
-                    (for [label (take i labels)]
+                    (for [label (concat
+                                  (map peek (take i labels))
+                                  [(-> labels (nth i) (nth j))])]
                       (ui/halign 0
                         label))))))))))))
