@@ -3,6 +3,7 @@
     [humble-deck.resources :as resources]
     [humble-deck.slides :as slides]
     [humble-deck.state :as state]
+    [io.github.humbleui.app :as app]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.paint :as paint]
@@ -101,18 +102,21 @@
     child))
 
 (defn hide-controls! []
-  #_(swap! state/*state assoc :controls? false)
+  (swap! state/*state assoc :controls? false)
   (when-some [cancel-timer (:controls-timer @state/*state)]
     (cancel-timer))
   (swap! state/*state assoc :controls-timer nil)
-  (window/hide-mouse-cursor-until-moved @state/*window))
+  (app/doui
+    (window/hide-mouse-cursor-until-moved @state/*window)))
 
 (defn show-controls! []
   (when-some [cancel-timer (:controls-timer @state/*state)]
     (cancel-timer))
   (swap! state/*state assoc
     :controls-timer (core/schedule hide-controls! 5000)
-    :controls?      true))
+    :controls?      true)
+  (app/doui
+    (window/hide-mouse-cursor-until-moved @state/*window false)))
 
 (defmacro template-icon-button [icon & on-click]
   `(ui/width 40
@@ -204,7 +208,7 @@
 
 (def controls
   (ui/mouse-listener
-    {:on-move (fn [_] (show-controls!))
+    {:on-move (fn [_] (show-controls!) false)
      :on-over (fn [_] (show-controls!))
      :on-out  (fn [_] (hide-controls!))}
     (ui/valign 1

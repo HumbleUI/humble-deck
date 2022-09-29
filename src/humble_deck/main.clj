@@ -6,6 +6,7 @@
     [humble-deck.slides :as slides]
     [humble-deck.state :as state]
     [humble-deck.templates :as templates]
+    [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui])
   (:import
@@ -13,16 +14,29 @@
     [io.github.humbleui.jwm Window]
     [io.github.humbleui.jwm.skija LayerMetalSkija]))
 
-(def app
-  (ui/default-theme {:face-ui resources/typeface-regular}
-    (ui/with-context {:fill-text (paint/fill 0xFF212B37)}
-      (controls/key-listener
-        (ui/stack
-          (ui/dynamic _ [mode (:mode @state/*state)]
-            (case mode
-              :overview overview/overview
-              :present  slides/slide))
-          controls/controls)))))
+(def app  
+  (ui/with-bounds ::bounds
+    (ui/dynamic ctx [scale      (:scale ctx)
+                     cap-height (-> ctx ::bounds :height (* scale) (quot 30))]
+      (let [font-body    (font/make-with-cap-height resources/typeface-regular cap-height)
+            font-h1      (font/make-with-cap-height resources/typeface-bold    cap-height)
+            font-code    (font/make-with-cap-height resources/typeface-code    cap-height)]
+        (ui/default-theme {:face-ui resources/typeface-regular}
+          (ui/with-context
+            {:face-ui   resources/typeface-regular
+             :font-body font-body
+             :font-h1   font-h1
+             :font-code font-code
+             :leading   (quot cap-height 2)
+             :fill-text (paint/fill 0xFF212B37)
+             :unit      (quot cap-height 10)}
+            (controls/key-listener
+              (ui/stack
+                (ui/dynamic _ [mode (:mode @state/*state)]
+                  (case mode
+                    :overview overview/overview
+                    :present  slides/slide))
+                controls/controls))))))))
 
 (reset! state/*app app)
 

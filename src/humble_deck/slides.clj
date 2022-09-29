@@ -22,54 +22,47 @@
          :placeholder "Edit me"}))
 
 (def demo
-  (ui/dynamic ctx [{:keys [font-default unit scale]} ctx]
-    (let [unit (* 1 scale)]
-      (ui/with-context
-        {:font-ui font-default}
-        (ui/center
-          (ui/column
-            (ui/halign 0.5
-              (ui/dynamic _ [counter @*counter]
-                (ui/label (str "Clicks: " counter))))
-            (ui/gap 0 (* unit 5))
+  (ui/dynamic ctx [{:keys [scale]} ctx]
+    (ui/center
+      (ui/width (* scale 80)
+        (ui/column            
+          (ui/button (fn [] (swap! *counter inc) (state/redraw))
+            (ui/label "Click me"))
+          (ui/gap 0 (* scale 10))
+            
+          (ui/halign 0
+            (ui/dynamic _ [counter @*counter]
+              (ui/label (str "Clicks: " counter))))
+          (ui/gap 0 (* scale 10))
           
-            (ui/halign 0.5
-              (ui/button (fn [] (swap! *counter inc) (state/redraw))
-                (ui/label "Click me")))
-            (ui/gap 0 (* unit 5))
-          
-            (ui/halign 0.5
-              (ui/width (* unit 30)
-                (ui/text-field *text)))
-            (ui/gap 0 (* unit 5))
-          
-            (ui/halign 0.5
-              (ui/checkbox *checkbox
-                (ui/label "Check me")))
-            (ui/gap 0 (* unit 5))
-          
-            (ui/halign 0.5
-              (ui/row
+          (ui/text-field *text)
+          (ui/gap 0 (* scale 10))
+            
+          (ui/halign 0
+            (ui/checkbox *checkbox
+              (ui/label "Check me")))
+          (ui/gap 0 (* scale 10))
+            
+          (ui/halign 0
+            (ui/row
+              (ui/valign 0.5
+                (ui/toggle *checkbox))
+              (ui/gap (* scale 1) 0)
+              (ui/clickable
+                {:on-click (fn [_] (swap! *checkbox not))}
                 (ui/valign 0.5
-                  (ui/toggle *checkbox))
-                (ui/gap (* unit 1) 0)
-                (ui/clickable
-                  {:on-click (fn [_] (swap! *checkbox not))}
-                  (ui/valign 0.5
-                    (ui/label "Toggle me")))))
-            (ui/gap 0 (* unit 5))
+                  (ui/label "Toggle me")))))
+          (ui/gap 0 (* scale 10))
           
-            (ui/halign 0.5
-              (ui/row
-                (ui/width (* unit 30)
-                  (ui/slider *slider))
-                (ui/gap (* unit 2) 0)
-                (ui/width (* unit 5)
-                  (ui/halign 1
-                    (ui/dynamic _ [value (:value @*slider)]
-                      (ui/label value))))))))))))
-            
-            
+          (ui/row
+            [:stretch 1
+              (ui/slider *slider)]
+            (ui/gap (* scale 2) 0)
+            (ui/max-width [(ui/label "100")]
+              (ui/valign 0.5
+                (ui/dynamic _ [value (:value @*slider)]
+                  (ui/label value))))))))))
+
 
 (def debug
   (ui/dynamic ctx [{:keys [unit]} ctx]
@@ -198,7 +191,7 @@
    [(templates/svg "buttons 2.svg")]
    
    [(templates/code
-     "(defn button [opts])))])])
+      "(defn button [opts])))])])
 (hoverable {}
 (clickable {:on-click (:on-click opts)}
   (clip-rrect (:radius opts)
@@ -279,24 +272,9 @@
 (swap! state/*slider
   assoc :max (dec (count slides)))
 
-(def slide
-  (ui/with-bounds ::bounds
-    (ui/dynamic ctx [scale      (:scale ctx)
-                     cap-height (-> ctx ::bounds :height (* scale) (quot 30))]
-      (let [font-default (font/make-with-cap-height resources/typeface-regular (* scale 10))
-            font-body    (font/make-with-cap-height resources/typeface-regular cap-height)
-            font-h1      (font/make-with-cap-height resources/typeface-bold    cap-height)
-            font-code    (font/make-with-cap-height resources/typeface-code    cap-height)]
-        (ui/with-context
-          {:font-default font-default
-           :font-body font-body
-           :font-h1   font-h1
-           :font-ui   font-body
-           :font-code font-code
-           :leading   (quot cap-height 2)
-           :unit      (quot cap-height 10)}
-          (ui/rect (paint/fill 0xFFFFFFFF)
-            (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
-              (let [slide (-> slides (nth slide) (nth subslide))]
-                (cond-> slide
-                  (instance? clojure.lang.IDeref slide) deref)))))))))
+(def slide  
+  (ui/rect (paint/fill 0xFFFFFFFF)
+    (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
+      (let [slide (-> slides (nth slide) (nth subslide))]
+        (cond-> slide
+          (instance? clojure.lang.IDeref slide) deref)))))

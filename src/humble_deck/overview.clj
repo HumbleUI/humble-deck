@@ -19,7 +19,7 @@
   10)
 
 (def zoom-time
-  250)
+  100)
 
 (defn slide-size [{:keys [width height]} scale]
   (let [per-row (max 1 (quot width 200))
@@ -108,58 +108,75 @@
 (defn zoomer [per-row slide-w slide-h child]
   (->Zoomer per-row slide-w slide-h child (paint/fill 0xFFF0F0F0)))
 
+(core/deftype+ SlidePreview [original-size child]
+  protocols/IComponent
+  (-measure [_ ctx cs]
+    cs)
+  
+  (-draw [_ ctx rect ^Canvas canvas]
+    (let [size       (core/ipoint
+                       (* (:scale ctx) (:width original-size))
+                       (* (:scale ctx) (:height original-size)))
+          scale      (/ (:width rect) (:width size))
+          child-rect (core/irect-xywh 0 0 (:width size) (:height size))]
+      (canvas/with-canvas canvas
+        (canvas/translate canvas (:x rect) (:y rect))
+        (canvas/scale canvas scale)
+        (core/draw child ctx child-rect canvas))))
+
+  (-event [_ ctx event])
+  
+  (-iterate [this ctx cb]
+    (or
+      (cb this)
+      (protocols/-iterate child ctx cb)))
+  
+  AutoCloseable
+  (close [_]
+    (core/child-close child)))
+
+(defn slide-preview [original-size child]
+  (->SlidePreview original-size child))
+
 (def overview
   (ui/with-bounds ::bounds
     (ui/dynamic ctx [{:keys [scale]} ctx
-                     height (:height (::bounds ctx))
-                     {:keys [per-row slide-w slide-h]} (slide-size (::bounds ctx) scale)]
+                     bounds (::bounds ctx)
+                     {:keys [per-row slide-w slide-h]} (slide-size bounds scale)]
       (zoomer per-row slide-w slide-h
         (ui/vscrollbar
           (ui/vscroll
-            (ui/padding padding
-              (let [cap-height (-> slide-h (* scale) (/ 30))
-                    font-default (font/make-with-cap-height resources/typeface-regular (* scale 10 (/ slide-h height)))
-                    font-body  (font/make-with-cap-height resources/typeface-regular cap-height)
-                    font-h1    (font/make-with-cap-height resources/typeface-bold    cap-height)
-                    font-code (font/make-with-cap-height resources/typeface-code     cap-height)
-                    full-len   (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
+            (ui/padding padding padding padding (+ padding 40)
+              (let [full-len   (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
                     slides'    (concat slides/slides (repeat (- full-len (count slides/slides)) nil))]
-                (ui/with-context
-                  {:font-default font-default
-                   :font-body font-body
-                   :font-h1   font-h1
-                   :font-ui   font-body
-                   :font-code font-code
-                   :leading   (quot cap-height 2)
-                   :unit      (quot cap-height 10)}
-                  (ui/column
-                    (interpose (ui/gap 0 padding)
-                      (for [row (partition per-row (core/zip (range) slides'))]
-                        (ui/height slide-h
-                          (ui/row
-                            (interpose (ui/gap padding 0)
-                              (for [[idx slide] row]
-                                (when slide
-                                  (let [subslide   (peek slide)
-                                        subslide'  (cond-> subslide
-                                                     (instance? clojure.lang.IDeref subslide) deref)
-                                        slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
-                                                     subslide')]
-                                    (ui/width slide-w
-                                      (ui/clickable
-                                        {:on-click
-                                         (fn [_]
-                                           (swap! state/*state assoc
-                                             :slide           idx
-                                             :subslide        (dec (count (nth slides/slides idx)))
-                                             :animation-start (core/now)))}
-                                        (ui/clip-rrect 4
-                                          (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
-                                                           {:keys [start end mode]} @state/*state]
-                                            (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
-                                              (ui/stack
-                                                slide-comp
-                                                (ui/rect (paint/fill 0x20000000)
-                                                  (ui/gap 0 0)))
-                                              slide-comp)))))))))
-                            [:stretch 1 nil]))))))))))))))
+                (ui/column
+                  (interpose (ui/gap 0 padding)
+                    (for [row (partition per-row (core/zip (range) slides'))]
+                      (ui/height slide-h
+                        (ui/row
+                          (interpose (ui/gap padding 0)
+                            (for [[idx slide] row]
+                              (when slide
+                                (let [subslide   (peek slide)
+                                      subslide'  (cond-> subslide
+                                                   (instance? clojure.lang.IDeref subslide) deref)
+                                      slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
+                                                   (slide-preview bounds subslide'))]
+                                  (ui/width slide-w
+                                    (ui/clickable
+                                      {:on-click
+                                       (fn [_]
+                                         (swap! state/*state assoc
+                                           :slide           idx
+                                           :subslide        (dec (count (nth slides/slides idx)))
+                                           :animation-start (core/now)))}
+                                      (ui/clip-rrect 4
+                                        (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
+                                                         {:keys [start end mode]} @state/*state]
+                                          (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
+                                            (ui/stack
+                                              slide-comp
+                                              (ui/rect (paint/fill 0x20000000)
+                                                (ui/gap 0 0)))
+                                            slide-comp)))))))))
+                          [:stretch 1 nil])))))))))))))
