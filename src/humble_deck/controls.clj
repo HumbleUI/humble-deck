@@ -13,10 +13,25 @@
   (:import
     [io.github.humbleui.skija FilterTileMode ImageFilter]))
 
-(defn safe-add [x y from to]
-  (-> (+ x y)
-    (min (dec to))
-    (max from)))
+(defn cancel-timer! []
+  (when-some [cancel-timer (:controls-timer @state/*state)]
+    (cancel-timer))
+  (swap! state/*state assoc :controls-timer nil))
+
+(defn hide-controls! []
+  (when (= :present (:mode @state/*state))
+    (swap! state/*state assoc :controls? false)
+    (cancel-timer!)
+    (app/doui
+      (window/hide-mouse-cursor-until-moved @state/*window))))
+
+(defn show-controls! []
+  (cancel-timer!)
+  (swap! state/*state assoc
+    :controls-timer (core/schedule hide-controls! 2500)
+    :controls?      true)
+  (app/doui
+    (window/hide-mouse-cursor-until-moved @state/*window false)))
 
 (defn toggle-modes []
   (case (:mode @state/*state)
@@ -25,6 +40,34 @@
                 :animation-end (core/now))
     :overview (swap! state/*state assoc
                 :animation-start (core/now))))
+
+(defn prev-slide []
+  (swap! state/*state
+    #(cond
+       (> (:subslide %) 0)
+       (update % :subslide dec)
+                                      
+       (> (:slide %) 0)
+       (-> %
+         (update :slide dec)
+         (assoc :subslide (dec (count (nth slides/slides (dec (:slide %)))))))
+                                      
+       :else
+       %)))
+
+(defn next-slide []
+  (swap! state/*state
+    #(cond
+       (< (:subslide %) (dec (count (nth slides/slides (:slide %)))))
+       (update % :subslide inc)
+                                    
+       (< (:slide %) (dec (count slides/slides)))
+       (-> %
+         (update :slide inc)
+         (assoc :subslide 0))
+                                    
+       :else
+       %)))
 
 (defn key-listener [child]
   (ui/key-listener
@@ -35,88 +78,51 @@
              cmd?    (modifiers :mac-command)
              option? (modifiers :mac-option)
              window  @state/*window]
-         (cond
-           (and cmd? (prev-key? key))
-           (swap! state/*state assoc
-             :slide 0
-             :subslide 0)
+         (when
+           (cond
+             (and cmd? (prev-key? key))
+             (swap! state/*state assoc
+               :slide 0
+               :subslide 0)
 
-           (and cmd? (next-key? key))
-           (swap! state/*state assoc
-             :slide    (dec (count slides/slides))
-             :subslide (dec (count (peek slides/slides))))
+             (and cmd? (next-key? key))
+             (swap! state/*state assoc
+               :slide    (dec (count slides/slides))
+               :subslide (dec (count (peek slides/slides))))
 
-           (and option? (prev-key? key))
-           (swap! state/*state
-             #(assoc %
-                :slide    (max 0 (- (:slide %) 10))
-                :subslide 0))
-           
-           (and option? (next-key? key))
-           (swap! state/*state
-             #(assoc %
-                :slide    (min
-                            (dec (count slides/slides))
-                            (- (:slide %) 10))
-                :subslide 0))
-           
-           (prev-key? key)
-           (swap! state/*state
-             #(cond
-                (> (:subslide %) 0)
-                (update % :subslide dec)
-                                  
-                (> (:slide %) 0)
-                (-> %
-                  (update :slide dec)
-                  (assoc :subslide (dec (count (nth slides/slides (dec (:slide %)))))))
-                                  
-                :else
-                %))
+             (and option? (prev-key? key))
+             (swap! state/*state
+               #(assoc %
+                  :slide    (max 0 (- (:slide %) 10))
+                  :subslide 0))
+             
+             (and option? (next-key? key))
+             (swap! state/*state
+               #(assoc %
+                  :slide    (min
+                              (dec (count slides/slides))
+                              (- (:slide %) 10))
+                  :subslide 0))
+             
+             (prev-key? key)
+             (prev-slide)
 
-           (next-key? key)
-           (swap! state/*state
-             #(cond
-                (< (:subslide %) (dec (count (nth slides/slides (:slide %)))))
-                (update % :subslide inc)
-                                  
-                (< (:slide %) (dec (count slides/slides)))
-                (-> %
-                  (update :slide inc)
-                  (assoc :subslide 0))
-                                  
-                :else
-                %))
+             (next-key? key)
+             (next-slide)
 
-           (= :t key)
-           (toggle-modes)
-           
-           (= :f key)
-           (let [full-screen? (window/full-screen? window)]
-             (window/set-full-screen window (not full-screen?)))
-           
-           (and 
-             (= :escape key)
-             (window/full-screen? window))
-           (window/set-full-screen window false))))}
+             (= :t key)
+             (toggle-modes)
+             
+             (= :f key)
+             (let [full-screen? (window/full-screen? window)]
+               (window/set-full-screen window (not full-screen?)))
+             
+             (and 
+               (= :escape key)
+               (window/full-screen? window))
+             (window/set-full-screen window false))
+           (hide-controls!))))}
     child))
-
-(defn hide-controls! []
-  (swap! state/*state assoc :controls? false)
-  (when-some [cancel-timer (:controls-timer @state/*state)]
-    (cancel-timer))
-  (swap! state/*state assoc :controls-timer nil)
-  (app/doui
-    (window/hide-mouse-cursor-until-moved @state/*window)))
-
-(defn show-controls! []
-  (when-some [cancel-timer (:controls-timer @state/*state)]
-    (cancel-timer))
-  (swap! state/*state assoc
-    :controls-timer (core/schedule hide-controls! 5000)
-    :controls?      true)
-  (app/doui
-    (window/hide-mouse-cursor-until-moved @state/*window false)))
 
 (defmacro template-icon-button [icon & on-click]
   `(ui/width 40
@@ -215,56 +221,58 @@
       (ui/dynamic _ [controls? (:controls? @state/*state)]
         (if (not controls?)
           (ui/gap 0 0)
-          (ui/with-context
-            {:fill-text                 (paint/fill 0xE0FFFFFF)
-             :hui.button/bg-active      (paint/fill 0x80000000)
-             :hui.button/bg-hovered     (paint/fill 0x40000000)
-             :hui.button/bg             (paint/fill 0x00000000)
-             :hui.button/padding-left   0
-             :hui.button/padding-top    0
-             :hui.button/padding-right  0
-             :hui.button/padding-bottom 0
-             :hui.button/border-radius  0}
-            (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
-              (ui/rect (paint/fill 0x50000000)
-                (ui/row
-                  (template-icon-button resources/icon-prev
-                    (swap! state/*state update :current safe-add -1 0 (count slides/slides))
-                    (show-controls!))
+          (ui/mouse-listener
+            {:on-move (fn [_] (cancel-timer!))}
+            (ui/with-context
+              {:fill-text                 (paint/fill 0xE0FFFFFF)
+               :hui.button/bg-active      (paint/fill 0x80000000)
+               :hui.button/bg-hovered     (paint/fill 0x40000000)
+               :hui.button/bg             (paint/fill 0x00000000)
+               :hui.button/padding-left   0
+               :hui.button/padding-top    0
+               :hui.button/padding-right  0
+               :hui.button/padding-bottom 0
+               :hui.button/border-radius  0}
+              (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
+                (ui/rect (paint/fill 0x50000000)
+                  (ui/row
+                    (template-icon-button resources/icon-prev
+                      (prev-slide)
+                      #_(show-controls!))
 
-                  (template-icon-button resources/icon-next
-                    (swap! state/*state update :current safe-add 1 0 (count slides/slides))
-                    (show-controls!))
+                    (template-icon-button resources/icon-next
+                      (next-slide)
+                      #_(show-controls!))
 
-                  (ui/gap 14 0)
-                                    
-                  [:stretch 1
-                   (ui/dynamic _ [mode (:mode @state/*state)]
-                     (if (= :present mode)
-                       (ui/valign 0.5
-                         (ui/slider
-                           {:track-active   (->SliderTrackActive)
-                            :track-inactive (->SliderTrackInactive)
-                            :thumb          (->SliderThumb)}
-                           state/*slider))
-                       (ui/gap 0 0)))]
-                  
-                  (ui/gap 14 0)
-                  
-                  (ui/dynamic _ [mode (:mode @state/*state)]
-                    (template-icon-button
-                      (case mode
-                        :overview resources/icon-present
-                        :present  resources/icon-overview)
-                      (toggle-modes)))
-                  
-                  (ui/dynamic ctx [window       (:window ctx)
-                                   full-screen? (window/full-screen? window)]
-                    (template-icon-button 
-                      (if full-screen?
-                        resources/icon-windowed
-                        resources/icon-full-screen)
-                      (window/set-full-screen window (not full-screen?)))))))))))))
+                    (ui/gap 14 0)
+                                      
+                    [:stretch 1
+                     (ui/dynamic _ [mode (:mode @state/*state)]
+                       (if (= :present mode)
+                         (ui/valign 0.5
+                           (ui/slider
+                             {:track-active   (->SliderTrackActive)
+                              :track-inactive (->SliderTrackInactive)
+                              :thumb          (->SliderThumb)}
+                             state/*slider))
+                         (ui/gap 0 0)))]
+                    
+                    (ui/gap 14 0)
+                    
+                    (ui/dynamic _ [mode (:mode @state/*state)]
+                      (template-icon-button
+                        (case mode
+                          :overview resources/icon-present
+                          :present  resources/icon-overview)
+                        (toggle-modes)))
+                    
+                    (ui/dynamic ctx [window       (:window ctx)
+                                     full-screen? (window/full-screen? window)]
+                      (template-icon-button 
+                        (if full-screen?
+                          resources/icon-windowed
+                          resources/icon-full-screen)
+                        (window/set-full-screen window (not full-screen?))))))))))))))
 
 (add-watch state/*state ::update-slider
   (fn [_ _ old new]
