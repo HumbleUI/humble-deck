@@ -45,7 +45,7 @@
   
   (-draw [_ ctx rect ^Canvas canvas]
     (canvas/draw-rect canvas rect bg)
-    (let [{:keys [current animation-start animation-end]} @state/*state]
+    (let [{:keys [slide animation-start animation-end]} @state/*state]
       (if (or animation-start animation-end)
         (let [progress (cond
                          animation-start
@@ -58,8 +58,8 @@
           (when (and animation-end (<= progress 0))
             (swap! state/*state assoc :animation-end nil))
           (let [{:keys [scale window]} ctx
-                row            (quot current per-row)
-                column         (mod current per-row)
+                row            (quot slide per-row)
+                column         (mod slide per-row)
                 slide-x        (* scale (+ padding (* column (+ slide-w padding)) (/ slide-w 2)))
                 slide-y        (* scale (+ padding (* row (+ slide-h padding)) (/ slide-h 2)))
               
@@ -138,25 +138,28 @@
                         (ui/height slide-h
                           (ui/row
                             (interpose (ui/gap padding 0)
-                              (for [[idx slide] row
-                                    :let [slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
-                                                       (if (delay? slide) @slide slide))]]
-                                
+                              (for [[idx slide] row]
                                 (when slide
-                                  (ui/width slide-w
-                                    (ui/clickable
-                                      {:on-click
-                                       (fn [_]
-                                         (swap! state/*state assoc
-                                           :current idx
-                                           :animation-start (core/now)))}
-                                      (ui/clip-rrect 4
-                                        (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
-                                                         {:keys [start end mode]} @state/*state]
-                                          (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
-                                            (ui/stack
-                                              slide-comp
-                                              (ui/rect (paint/fill 0x20000000)
-                                                (ui/gap 0 0)))
-                                            slide-comp))))))))
+                                  (let [subslide   (peek slide)
+                                        subslide'  (cond-> subslide
+                                                     (instance? clojure.lang.IDeref subslide) deref)
+                                        slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
+                                                     subslide')]
+                                    (ui/width slide-w
+                                      (ui/clickable
+                                        {:on-click
+                                         (fn [_]
+                                           (swap! state/*state assoc
+                                             :slide           idx
+                                             :subslide        (dec (count (nth slides/slides idx)))
+                                             :animation-start (core/now)))}
+                                        (ui/clip-rrect 4
+                                          (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
+                                                           {:keys [start end mode]} @state/*state]
+                                            (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
+                                              (ui/stack
+                                                slide-comp
+                                                (ui/rect (paint/fill 0x20000000)
+                                                  (ui/gap 0 0)))
+                                              slide-comp)))))))))
                             [:stretch 1 nil]))))))))))))))

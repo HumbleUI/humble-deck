@@ -82,203 +82,194 @@
           (ui/label "Debug info"))))))
 
 (def slides
-  (vec
-    (flatten
-      [(templates/svg "title.svg")
-       
-       (templates/svg "platforms 0.svg")
-       (templates/svg "platforms 1.svg")
-       (templates/svg "platforms 2.svg")
-       (templates/svg "platforms 3.svg")
-       
-       (delay
-         (ui/stack
-           @(templates/image "native.jpg")
-           @(templates/section "NATIVE")))
-       
-       (templates/list {:header "Native is" :range [1 4]} "$$$$" "Organizationally Complicated" "Kinda pointless")
+  [[(templates/svg "title.svg")]
+   
+   [(templates/svg "platforms 0.svg")
+    (templates/svg "platforms 1.svg")
+    (templates/svg "platforms 2.svg")
+    (templates/svg "platforms 3.svg")]
+   
+   [(delay
+      (ui/stack
+        @(templates/image "native.jpg")
+        @(templates/section "NATIVE")))]
+   
+   (templates/list "Native is"
+     "$$$$"
+     "Organizationally Complicated"
+     "Kinda pointless")
 
-       (templates/label "QT")
-       (templates/label "QT\nis C++")
+   [(templates/label "QT")
+    (templates/label "QT\nis C++")]
 
-       (templates/label "Java UIs")
-       (templates/label "Java UIs\nare cursed 👻")
-      
-       (delay
-         (ui/rect (paint/fill 0xFF2C2E3A)
-           @(templates/svg "electron.svg")))
-       
-       (templates/list {:header "Downsides:" :range [2 5]} "Threading model" "JS Performance" "DOM Performance" "No low-level control")
-       
-       (delay
-         (ui/stack
-           @(templates/image "electron_apps.jpg")
-           (ui/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
-             @(templates/label "1.\nPeople WANT apps"))))
-       
-       (templates/label "2.\nPeople are OK\nwith non-native UI")
+   [(templates/label "Java UIs")
+    (templates/label "Java UIs\nare cursed 👻")]
+  
+   [(templates/svg {:bg 0xFF2C2E3A} "electron.svg")]
+   
+   (templates/list "Downsides:"
+     "Threading model"
+     "JS Performance"
+     "DOM Performance"
+     "No low-level control")
+   
+   [(delay
+      (ui/stack
+        @(templates/image "electron_apps.jpg")
+        (ui/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
+          @(templates/label "1.\nPeople WANT apps"))))]
+   
+   [(templates/label "2.\nPeople are OK\nwith non-native UI")]
 
-       (delay
-         (ui/rect (paint/fill 0xFFF3F3F3)
-           @(templates/svg "buttons 0.svg")))
-       (templates/image "buttons 1.jpg")
-       (templates/label "3.\nThere is no good alternative")
-       
-       (templates/svg "humbleui.svg")
-       
-       (templates/list {:range [1 8] :header "Humble UI"}
-         "UI Framework"
-         "For desktop apps"
-         "~ Electron"
-         "No browser"
-         "No DOM"
-         "No JS"
-         "JVM Clojure only")
-       
-       (templates/section "DEMO")
-       
-       demo
-       
-       (templates/section "Anatomy of UI framework")
-       
-       (templates/svg "architecture.svg")
-       
-       (templates/svg "skia.svg")
-       
-       (templates/list {:header "Skia" :range [1 10]}
-         "Graphics library"
-         "Good enough for Chrome"
-         "& Android"
-         "& Flutter, Libre Office, Avalonia, ..."
-         "Fast"
-         "Modern"
-         "OpenGL"
-         "DirectX 11, 12"
-         "Metal, Vulkan, WebGPU")
-       
-       debug
-       
-       (templates/svg "skija.svg")
-       
-       (templates/list {:header "Skija"}
-         "Skia bindings for Java")
-       
-       (templates/svg "jwm.svg")
-       
-       (templates/list {:header "JWM" :range [1 7]}
-         "Java Window Management"
-         "OS integration"
-         "Modern capabilities"
-         "Multi-monitor, VSync, Color Profiles, HiDPI"
-         "High-quality"
-         "Indistinguishable from native")
-       
-       (templates/svg "architecture.svg")
-       
-       (templates/section "Killer features")
-       
-       (templates/list {:header "Simple layout" :range [1 3]}
-         "Parent imposes size"
-         "Child chooses their own size")
-       (templates/list {:header "Simple layout" :range [3 3]}
-         "(-draw child size)"
-         "(-measure child space)"
-         "Child chooses their own size")
-       
-       (templates/section "Composable components")
-       (templates/image "attributes.jpg")
-       (templates/svg "buttons 2.svg")
-       (templates/code
-         "(defn button [opts]
-  (hoverable {}
-    (clickable {:on-click (:on-click opts)}
-      (clip-rrect (:radius opts)
-        (rect (:fill opts)
-          (padding (:padding opts)
-            (center
-              (label (:caption opts)))))))))")
-       (templates/code
-         "(defn button [opts]
-  (hoverable {}
-    (clickable {:on-click (:on-click opts)}
-      (clip-diagonal (:radius opts)
-        (rect (:fill opts)
-          (padding (:padding opts)
-            (center
-              (label (:caption opts)))))))))")
-       (templates/code
-         "(defn button [opts]
-  (hoverable {}
-    (clickable {:on-click (:on-click opts)}
-      (shadow (:shadow opts)
-        (clip-diagonal (:radius opts)
-          (rect (:fill opts)
-            (padding (:padding opts)
-              (center
-                (label (:caption opts))))))))))")
-       
-       (templates/section "Sane text metrics")
-       (templates/svg "capsize 0.svg")
-       (templates/svg "capsize 1.svg")
-       (templates/svg "capsize 2.svg")
-       (templates/svg "capsize 3.svg")
-       
-       (templates/list {:header "Also" :range [1 7]}
-         "Wide Color Gamut"
-         "OpenType features"
-         "OkLab Gradients"
-         "Squircles"
-         "Pixel-perfect scaled graphics"
-         "...")
+   [(templates/svg {:bg 0xFFF3F3F3} "buttons 0.svg")
+    (templates/image "buttons 1.jpg")]
+   
+   [(templates/label "3.\nThere is no good alternative")]
+   
+   [(templates/svg "humbleui.svg")]
+   
+   (templates/list "Humble UI"
+     "UI Framework"
+     "For desktop apps"
+     "~ Electron"
+     "No browser"
+     "No DOM"
+     "No JS"
+     "JVM Clojure only")
+   
+   [(templates/section "DEMO")]
+   
+   [demo]
+   
+   [(templates/section "Anatomy of UI framework")]
+   
+   [(templates/svg "architecture.svg")]
+   
+   [(templates/svg "skia.svg")]
+   
+   (templates/list "Skia"
+     "Graphics library"
+     "Good enough for Chrome"
+     "& Android"
+     "& Flutter, Libre Office, Avalonia, ..."
+     "Fast"
+     "Modern"
+     "OpenGL"
+     "DirectX 11, 12"
+     "Metal, Vulkan, WebGPU")
+   
+   [debug]
+   
+   [(templates/svg "skija.svg")]
+   
+   (templates/list "Skija"
+     "Skia bindings for Java")
+   
+   [(templates/svg "jwm.svg")]
+   
+   (templates/list "JWM"
+     "Java Window Management"
+     "OS integration"
+     "Modern capabilities"
+     "Multi-monitor, VSync, Color Profiles, HiDPI"
+     "High-quality"
+     "Indistinguishable from native")
+   
+   [(templates/svg "architecture.svg")]
+   
+   [(templates/section "Killer features")]
+   
+   (templates/list "Simple layout"
+     "Parent imposes size"
+     "Child chooses their own size"
+     "(-draw child size)"
+     "(-measure child space)")
+   
+   [(templates/section "Composable components")]
+   [(templates/image "attributes.jpg")]
+   [(templates/svg "buttons 2.svg")]
+   
+   [(templates/code
+     "(defn button [opts]
+(hoverable {}
+(clickable {:on-click (:on-click opts)}
+  (clip-rrect (:radius opts)
+    (rect (:fill opts)
+      (padding (:padding opts)
+        (center
+          (label (:caption opts)))))))))")
+    (templates/code
+      "(defn button [opts]
+(hoverable {}
+(clickable {:on-click (:on-click opts)}
+  (clip-diagonal (:radius opts)
+    (rect (:fill opts)
+      (padding (:padding opts)
+        (center
+          (label (:caption opts)))))))))")
+    (templates/code
+      "(defn button [opts]
+(hoverable {}
+(clickable {:on-click (:on-click opts)}
+  (shadow (:shadow opts)
+    (clip-diagonal (:radius opts)
+      (rect (:fill opts)
+        (padding (:padding opts)
+          (center
+            (label (:caption opts))))))))))")]
+   
+   [(templates/section "Sane text metrics")]
+   
+   [(templates/svg "capsize 0.svg")
+    (templates/svg "capsize 1.svg")
+    (templates/svg "capsize 2.svg")
+    (templates/svg "capsize 3.svg")]
+   
+   (templates/list "Also"
+     "Wide Color Gamut"
+     "OpenType features"
+     "OkLab Gradients"
+     "Squircles"
+     "Pixel-perfect scaled graphics"
+     "...")
 
-       (templates/list {:header "Clojure" :range [1 5]}
-         "❤️"
-         "High-level"
-         "Easy to use"
-         "Fast"
-         "Fast(er than JS)")
-       
-       (templates/list {:header "Clojure" :range [5 7]}
-         "❤️"
-         "High-level"
-         "Easy to use"
-         "Fast(er than JS)"
-         "Threads"
-         "REPL")
-       
-       ;; (ui/rect (paint/fill 0xFF00EEEE)
-       (templates/section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")
-       
-       (templates/list {:header "REPL + UI" :range [2 5]}
-         "Instant Feedback"
-         "play & experiment"
-         "like figwheel/shadow-cljs"
-         "but without browser")
-       
-       (templates/list {:header "Status" :range [1 4]}
-         "Active development"
-         "Pre-alpha"
-         "Everything changes"
-         "Everything changes. A lot")
-       
-       (templates/list {:header "Status" :range [4 4]}
-         "Active development"
-         "Pre-alpha"
-         "Everything changes. A lot")
-       
-       (templates/list {:header "Missing pieces" :range [1 7]}
-         "JWM / OS integration (Java, C++)"
-         "State management"
-         "Rich text"
-         "Viewports"
-         "Distribution"
-         "Testing and adoption")
-       
-       (templates/svg "links.svg")
-       
-       (templates/label "Thank you!")
-       
-       (templates/label "Questions?")])))
+   (templates/list "Clojure"
+     "❤️"
+     "High-level"
+     "Easy to use"
+     ["Fast"
+      "Fast(er than JS)"]
+     "Threads"
+     "REPL")
+          
+   [(templates/section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")]
+   
+   (templates/list "REPL + UI"
+     "Instant Feedback"
+     "play & experiment"
+     "like figwheel/shadow-cljs"
+     "but without browser")
+   
+   (templates/list "Status"
+     "Active development"
+     "Pre-alpha"
+     ["Everything changes"
+      "Everything changes. A lot"])
+          
+   (templates/list "Missing pieces"
+     "JWM / OS integration (Java, C++)"
+     "State management"
+     "Rich text"
+     "Viewports"
+     "Distribution"
+     "Testing and adoption")
+   
+   [(templates/svg "links.svg")]
+   
+   [(templates/label "Thank you!\nQuestions?")]])
+
+(swap! state/*slider
+  assoc :max (dec (count slides)))
 
 (def slide
   (ui/with-bounds ::bounds
@@ -297,7 +288,7 @@
            :leading   (quot cap-height 2)
            :unit      (quot cap-height 10)}
           (ui/rect (paint/fill 0xFFFFFFFF)
-            (ui/dynamic _ [current (:current @state/*state)]
-              (let [slide (nth slides current)]
+            (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
+              (let [slide (-> slides (nth slide) (nth subslide))]
                 (cond-> slide
-                  (delay? slide) deref)))))))))
+                  (instance? clojure.lang.IDeref slide) deref)))))))))

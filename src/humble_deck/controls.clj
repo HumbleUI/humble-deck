@@ -36,23 +36,57 @@
              window  @state/*window]
          (cond
            (and cmd? (prev-key? key))
-           (swap! state/*state update :current safe-add -1000000 0 (count slides/slides))
+           (swap! state/*state assoc
+             :slide 0
+             :subslide 0)
 
            (and cmd? (next-key? key))
-           (swap! state/*state update :current safe-add 1000000 0 (count slides/slides))
+           (swap! state/*state assoc
+             :slide    (dec (count slides/slides))
+             :subslide (dec (count (peek slides/slides))))
 
            (and option? (prev-key? key))
-           (swap! state/*state update :current safe-add -10 0 (count slides/slides))
+           (swap! state/*state
+             #(assoc %
+                :slide    (max 0 (- (:slide %) 10))
+                :subslide 0))
            
            (and option? (next-key? key))
-           (swap! state/*state update :current safe-add 10 0 (count slides/slides))
+           (swap! state/*state
+             #(assoc %
+                :slide    (min
+                            (dec (count slides/slides))
+                            (- (:slide %) 10))
+                :subslide 0))
            
            (prev-key? key)
-           (swap! state/*state update :current safe-add -1 0 (count slides/slides))
+           (swap! state/*state
+             #(cond
+                (> (:subslide %) 0)
+                (update % :subslide dec)
+                                  
+                (> (:slide %) 0)
+                (-> %
+                  (update :slide dec)
+                  (assoc :subslide (dec (count (nth slides/slides (dec (:slide %)))))))
+                                  
+                :else
+                %))
 
            (next-key? key)
-           (swap! state/*state update :current safe-add 1 0 (count slides/slides))
-           
+           (swap! state/*state
+             #(cond
+                (< (:subslide %) (dec (count (nth slides/slides (:slide %)))))
+                (update % :subslide inc)
+                                  
+                (< (:slide %) (dec (count slides/slides)))
+                (-> %
+                  (update :slide inc)
+                  (assoc :subslide 0))
+                                  
+                :else
+                %))
+
            (= :t key)
            (toggle-modes)
            
@@ -67,7 +101,7 @@
     child))
 
 (defn hide-controls! []
-  (swap! state/*state assoc :controls? false)
+  #_(swap! state/*state assoc :controls? false)
   (when-some [cancel-timer (:controls-timer @state/*state)]
     (cancel-timer))
   (swap! state/*state assoc :controls-timer nil)
@@ -227,3 +261,15 @@
                         resources/icon-windowed
                         resources/icon-full-screen)
                       (window/set-full-screen window (not full-screen?)))))))))))))
+
+(add-watch state/*state ::update-slider
+  (fn [_ _ old new]
+    (when (not= (:slide new) (:value @state/*slider))
+      (swap! state/*slider assoc :value (:slide new)))))
+
+(add-watch state/*slider ::rewind
+  (fn [_ _ old new]
+    (when (not= (:value new) (:slide @state/*state))
+      (swap! state/*state assoc
+        :slide    (:value new)
+        :subslide (dec (count (nth slides/slides (:value new))))))))

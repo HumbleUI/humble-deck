@@ -39,10 +39,15 @@
     (scaler/scaler
       (ui/image (io/file "slides" name)))))
 
-(defn svg [name]
-  (delay
-    (scaler/scaler
-      (ui/svg (io/file "slides" name)))))
+(defn svg
+  ([name]
+   (svg nil name))
+  ([opts name]
+   (let [{:keys [bg] :or {bg 0xFFFFFFFF}} opts]
+     (delay
+       (ui/rect (paint/fill bg)
+         (scaler/scaler
+           (ui/svg (io/file "slides" name))))))))
 
 (defn section [name]
   (delay
@@ -62,29 +67,26 @@
         (ui/rect (paint/fill 0xFF000000)
           (ui/gap (* 2 unit) (* 2 unit)))))))
 
-(defn list [opts & lines]
-  (let [{:keys [header range]} opts
-        header-label (when header
-                       (ui/dynamic ctx [{:keys [font-h1]} ctx]
-                         (ui/with-context {:font-ui font-h1}
-                           (ui/label header))))
-        labels (map
-                 #(ui/dynamic ctx [{:keys [unit]} ctx]
-                    (ui/row
-                      icon-bullet
-                      (ui/gap (* unit 3) 0)
-                      (ui/label %)))
-                 lines)
-        probes (concat (when header-label [header-label]) labels)]
-    (for [i (if-some [[from to] range]
-              (clojure.core/range from (inc to))
-              [(count probes)])]
-      (delay
-        (ui/center
-          (ui/max-width probes
-            (ui/dynamic ctx [{:keys [leading]} ctx]
-              (ui/column
-                (interpose (ui/gap 0 leading)
-                  (for [label (take i probes)]
-                    (ui/halign 0
-                      label)))))))))))
+(defn list [header & lines]
+  (let [labels (cons
+                 (ui/dynamic ctx [{:keys [font-h1]} ctx]
+                       (ui/with-context {:font-ui font-h1}
+                         (ui/label header)))
+                 (map
+                   #(ui/dynamic ctx [{:keys [unit]} ctx]
+                      (ui/row
+                        icon-bullet
+                        (ui/gap (* unit 3) 0)
+                        (ui/label %)))
+                   lines))]
+    (vec
+      (for [i (range 1 (inc (count labels)))]
+        (delay
+          (ui/center
+            (ui/max-width labels
+              (ui/dynamic ctx [{:keys [leading]} ctx]
+                (ui/column
+                  (interpose (ui/gap 0 leading)
+                    (for [label (take i labels)]
+                      (ui/halign 0
+                        label))))))))))))
