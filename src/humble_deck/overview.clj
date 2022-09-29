@@ -19,7 +19,7 @@
   10)
 
 (def zoom-time
-  100)
+  250)
 
 (defn slide-size [{:keys [width height]} scale]
   (let [per-row (max 1 (quot width 200))
@@ -38,6 +38,16 @@
      :slide-w slide-w
      :slide-h slide-h}))
 
+(defn transition-circ ^double [^double pos]
+  (- 1 (Math/sin (Math/acos pos))))
+
+(defn ease-in-out ^double [transition ^double p]
+  (if (<= p (double 0.5))
+    (/ (transition (* (double 2) p))
+       (double 2))
+    (/ (- 2 (transition (* (double 2) (- (double 1) p))))
+       (double 2))))
+
 (core/deftype+ Zoomer [per-row slide-w slide-h child bg]
   protocols/IComponent
   (-measure [_ ctx cs]
@@ -52,7 +62,8 @@
                          (min 1 (/ (- (core/now) animation-start) zoom-time))
                        
                          animation-end
-                         (max 0 (- 1 (/ (- (core/now) animation-end) zoom-time))))]
+                         (max 0 (- 1 (/ (- (core/now) animation-end) zoom-time))))
+              progress (ease-in-out transition-circ progress)]
           (when (and animation-start (>= progress 1))
             (swap! state/*state assoc :mode :present :animation-start nil))
           (when (and animation-end (<= progress 0))
@@ -172,8 +183,8 @@
                                            :animation-start (core/now)))}
                                       (ui/clip-rrect 4
                                         (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
-                                                         {:keys [start end mode]} @state/*state]
-                                          (if (and (= :overview mode) (nil? start) (nil? end) hovered?)
+                                                         {:keys [animation-start animation-end mode]} @state/*state]
+                                          (if (and (= :overview mode) (nil? animation-start) (nil? animation-end) hovered?)
                                             (ui/stack
                                               slide-comp
                                               (ui/rect (paint/fill 0x20000000)
