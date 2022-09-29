@@ -13,26 +13,24 @@
   ([opts s]
    (delay
      (ui/center
-       (ui/dynamic ctx [{:keys [fill-text leading]} ctx]
+       (ui/dynamic ctx [{:keys [font-body leading]} ctx]
          (ui/column
            (interpose (ui/gap 0 leading)
              (for [line (str/split s #"\n")]
                (ui/halign 0.5
-                 (ui/label line))))))))))
+                 (ui/label {:font font-body} line))))))))))
 
 (defn code
   ([s] (code {} s))
   ([opts s]
    (delay
      (ui/center
-       (ui/dynamic ctx [{:keys [fill-text leading font-code]} ctx]
-         (ui/with-context
-           {:font-ui font-code}
-           (ui/column
-             (interpose (ui/gap 0 (* 1.5 leading))
-               (for [line (str/split s #"\n")]
-                 (ui/halign 0
-                   (ui/label line)))))))))))
+       (ui/dynamic ctx [{:keys [leading font-code]} ctx]           
+         (ui/column
+           (interpose (ui/gap 0 (* 1.5 leading))
+             (for [line (str/split s #"\n")]
+               (ui/halign 0
+                 (ui/label {:font font-code} line))))))))))
 
 (defn image [name]
   (delay
@@ -53,12 +51,11 @@
   (delay
     (ui/center
       (ui/dynamic ctx [{:keys [font-h1 leading]} ctx]
-        (ui/with-context {:font-ui font-h1}
-          (ui/column
-            (interpose (ui/gap 0 leading)
-              (for [line (str/split name #"\n")]
-                (ui/halign 0.5
-                  (ui/label line))))))))))
+        (ui/column
+          (interpose (ui/gap 0 leading)
+            (for [line (str/split name #"\n")]
+              (ui/halign 0.5
+                (ui/label {:font font-h1} line)))))))))
 
 (def icon-bullet
   (ui/dynamic ctx [{:keys [unit]} ctx]
@@ -70,16 +67,15 @@
 (defn list [header & lines]
   (let [labels (concat
                  [[(ui/dynamic ctx [{:keys [font-h1]} ctx]
-                     (ui/with-context {:font-ui font-h1}
-                       (ui/label header)))]]
+                     (ui/label {:font font-h1} header))]]
                  (map
                    (fn [line]
                      (mapv
-                       #(ui/dynamic ctx [{:keys [unit]} ctx]
+                       #(ui/dynamic ctx [{:keys [font-body unit]} ctx]
                           (ui/row
                             icon-bullet
                             (ui/gap (* unit 3) 0)
-                            (ui/label %)))
+                            (ui/label {:font font-body} %)))
                        (if (sequential? line) line [line])))
                    lines))]
     (vec
