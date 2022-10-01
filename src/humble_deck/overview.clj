@@ -44,9 +44,9 @@
 (defn ease-in-out ^double [transition ^double p]
   (if (<= p (double 0.5))
     (/ (transition (* (double 2) p))
-       (double 2))
+      (double 2))
     (/ (- 2 (transition (* (double 2) (- (double 1) p))))
-       (double 2))))
+      (double 2))))
 
 (core/deftype+ Zoomer [per-row slide-w slide-h child bg]
   protocols/IComponent

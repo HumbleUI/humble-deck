@@ -6,6 +6,7 @@
     [humble-deck.slides :as slides]
     [humble-deck.state :as state]
     [humble-deck.templates :as templates]
+    [io.github.humbleui.debug :as debug]
     [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui])
@@ -49,4 +50,5 @@
          :bg-color 0xFFFFFFFF}
         state/*app)))
   (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
+  ; (reset! debug/*enabled? true)
   (state/redraw))
