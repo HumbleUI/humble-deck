@@ -153,13 +153,14 @@
   (ui/with-bounds ::bounds
     (ui/dynamic ctx [{:keys [scale]} ctx
                      bounds (::bounds ctx)
-                     {:keys [per-row slide-w slide-h]} (slide-size bounds scale)]
+                     {:keys [per-row slide-w slide-h]} (slide-size bounds scale)
+                     image-snapshot? @state/*image-snapshot?]
       (zoomer per-row slide-w slide-h
         (ui/vscrollbar
           (ui/vscroll
             (ui/padding padding padding padding (+ padding 40)
-              (let [full-len   (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
-                    slides'    (concat slides/slides (repeat (- full-len (count slides/slides)) nil))]
+              (let [full-len  (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
+                    slides'   (concat slides/slides (repeat (- full-len (count slides/slides)) nil))]
                 (ui/column
                   (interpose (ui/gap 0 padding)
                     (for [row (partition per-row (core/zip (range) slides'))]
@@ -171,8 +172,9 @@
                                 (let [subslide   (peek slide)
                                       subslide'  (cond-> subslide
                                                    (instance? clojure.lang.IDeref subslide) deref)
-                                      slide-comp (ui/rect (paint/fill 0xFFFFFFFF)
-                                                   (slide-preview bounds subslide'))]
+                                      slide-comp (cond->> (ui/rect (paint/fill 0xFFFFFFFF)
+                                                            (slide-preview bounds subslide'))
+                                                   image-snapshot? (ui/image-snapshot {:scale (core/point 1 1)}))]
                                   (ui/width slide-w
                                     (ui/clickable
                                       {:on-click
@@ -182,9 +184,14 @@
                                            :subslide        (dec (count (nth slides/slides idx)))
                                            :animation-start (core/now)))}
                                       (ui/clip-rrect 4
-                                        (ui/dynamic ctx [{:hui/keys [hovered?]} ctx
-                                                         {:keys [animation-start animation-end mode]} @state/*state]
-                                          (if (and (= :overview mode) (nil? animation-start) (nil? animation-end) hovered?)
+                                        (ui/dynamic ctx [hover? (let [{:hui/keys [hovered?]} ctx
+                                                                      {:keys [mode animation-start animation-end]} @state/*state]
+                                                                  (and
+                                                                    (= :overview mode)
+                                                                    (nil? animation-start)
+                                                                    (nil? animation-end)
+                                                                    hovered?))]
+                                          (if hover?
                                             (ui/stack
                                               slide-comp
                                               (ui/rect (paint/fill 0x20000000)

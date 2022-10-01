@@ -63,16 +63,23 @@
                 (ui/dynamic _ [value (:value @*slider)]
                   (ui/label value))))))))))
 
-
 (def debug
-  (ui/dynamic ctx [{:keys [unit]} ctx]
+  (ui/dynamic ctx [{:keys []} ctx]
     (ui/center
-      (ui/row
-        (ui/valign 0.5
-          (ui/toggle debug/*enabled?))
-        (ui/gap (* unit 2) 0)
-        (ui/valign 0.5
-          (ui/label "Debug info"))))))
+      (ui/column
+        (ui/row
+          (ui/valign 0.5
+            (ui/toggle debug/*enabled?))
+          (ui/gap 2 0)
+          (ui/valign 0.5
+            (ui/label "Debug info")))
+        (ui/gap 0 10)
+        (ui/row
+          (ui/valign 0.5
+            (ui/toggle state/*image-snapshot?))
+          (ui/gap 2 0)
+          (ui/valign 0.5
+            (ui/label "Cache previews")))))))
 
 (def slides
   [[(templates/svg "title.svg")]

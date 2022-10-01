@@ -31,3 +31,6 @@
   (atom
     {:value 0
      :min   0}))
+
+(def *image-snapshot?
+  (atom false))
