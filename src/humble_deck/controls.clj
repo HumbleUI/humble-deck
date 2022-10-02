@@ -218,7 +218,7 @@
      :on-over (fn [_] (show-controls!))
      :on-out  (fn [_] (hide-controls!))}
     (ui/valign 1
-      (ui/dynamic _ [controls? (:controls? @state/*state)]
+      (ui/dynamic _ [{:keys [controls? mode]} @state/*state]
         (if (not controls?)
           (ui/gap 0 0)
           (ui/mouse-listener
@@ -236,26 +236,24 @@
               (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
                 (ui/rect (paint/fill 0x50000000)
                   (ui/row
-                    (template-icon-button resources/icon-prev
-                      (prev-slide)
-                      #_(show-controls!))
+                    (when (= :present mode)
+                      (template-icon-button resources/icon-prev
+                        (prev-slide)))
 
-                    (template-icon-button resources/icon-next
-                      (next-slide)
-                      #_(show-controls!))
+                    (when (= :present mode)
+                      (template-icon-button resources/icon-next
+                        (next-slide)))
 
                     (ui/gap 14 0)
                                       
                     [:stretch 1
-                     (ui/dynamic _ [mode (:mode @state/*state)]
-                       (if (= :present mode)
-                         (ui/valign 0.5
-                           (ui/slider
-                             {:track-active   (->SliderTrackActive)
-                              :track-inactive (->SliderTrackInactive)
-                              :thumb          (->SliderThumb)}
-                             state/*slider))
-                         (ui/gap 0 0)))]
+                     (when (= :present mode)
+                       (ui/valign 0.5
+                         (ui/slider
+                           {:track-active   (->SliderTrackActive)
+                            :track-inactive (->SliderTrackInactive)
+                            :thumb          (->SliderThumb)}
+                           state/*slider)))]
                     
                     (ui/gap 14 0)
                     
