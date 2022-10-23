@@ -198,7 +198,8 @@
    [(templates/svg "buttons 2.svg")]
    
    [(templates/code
-      "(defn button [opts]
+      "
+(defn button [opts]
   (hoverable {}
     (clickable {:on-click (:on-click opts)}
       (clip-rrect (:radius opts)
@@ -207,7 +208,8 @@
             (center
               (label (:caption opts)))))))))")
     (templates/code
-      "(defn button [opts]
+      "
+(defn button [opts]
   (hoverable {}
     (clickable {:on-click (:on-click opts)}
       (clip-diagonal (:radius opts)
