@@ -198,33 +198,33 @@
    [(templates/svg "buttons 2.svg")]
    
    [(templates/code
-      "(defn button [opts])))])])
-(hoverable {}
-(clickable {:on-click (:on-click opts)}
-  (clip-rrect (:radius opts)
-    (rect (:fill opts)
-      (padding (:padding opts)
-        (center
-          (label (:caption opts)))))))))")
+      "(defn button [opts]
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (clip-rrect (:radius opts)
+        (rect (:fill opts)
+          (padding (:padding opts)
+            (center
+              (label (:caption opts)))))))))")
     (templates/code
       "(defn button [opts]
-(hoverable {}
-(clickable {:on-click (:on-click opts)}
-  (clip-diagonal (:radius opts)
-    (rect (:fill opts)
-      (padding (:padding opts)
-        (center
-          (label (:caption opts)))))))))")
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (clip-diagonal (:radius opts)
+        (rect (:fill opts)
+          (padding (:padding opts)
+            (center
+              (label (:caption opts)))))))))")
     (templates/code
       "(defn button [opts]
-(hoverable {}
-(clickable {:on-click (:on-click opts)}
-  (shadow (:shadow opts)
-    (clip-diagonal (:radius opts)
-      (rect (:fill opts)
-        (padding (:padding opts)
-          (center
-            (label (:caption opts))))))))))")]
+  (hoverable {}
+    (clickable {:on-click (:on-click opts)}
+      (shadow (:shadow opts)
+        (clip-diagonal (:radius opts)
+          (rect (:fill opts)
+            (padding (:padding opts)
+              (center
+                (label (:caption opts))))))))))")]
    
    [(templates/section "Sane text metrics")]
    
