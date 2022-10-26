@@ -125,12 +125,10 @@
     child))
 
 (defmacro template-icon-button [icon & on-click]
-  `(ui/width 40
-     (ui/height 40
-       (ui/button (fn [] ~@on-click)
-         (ui/width 14
-           (ui/height 14
-             ~icon))))))
+  `(ui/button (fn [] ~@on-click) 
+     (ui/width 40
+       (ui/height 40
+         ~icon))))
 
 (def thumb-w
   3)
