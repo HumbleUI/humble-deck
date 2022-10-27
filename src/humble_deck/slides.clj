@@ -295,7 +295,7 @@
      "Threads"
      "REPL")
           
-   [(templates/section "REPL + UI\n=\n💪🦸‍♂️🦸‍♀️🤳\nSUPERPOWER")]
+   [(templates/section "REPL + UI = SUPER🦸‍♂️🦸‍♀️POVER")]
    
    (templates/list "REPL + UI"
      "Instant Feedback"
