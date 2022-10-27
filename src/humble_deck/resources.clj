@@ -24,6 +24,9 @@
 (def icon-present
   (ui/svg "resources/present.svg"))
 
+(def icon-speaker
+  (ui/svg "resources/speaker.svg"))
+
 (def icon-full-screen
   (ui/svg "resources/fullscreen.svg"))
 

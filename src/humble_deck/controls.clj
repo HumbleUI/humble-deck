@@ -2,6 +2,7 @@
   (:require
     [humble-deck.resources :as resources]
     [humble-deck.slides :as slides]
+    [humble-deck.speaker :as speaker]
     [humble-deck.state :as state]
     [io.github.humbleui.app :as app]
     [io.github.humbleui.canvas :as canvas]
@@ -116,6 +117,9 @@
              (= :f key)
              (let [full-screen? (window/full-screen? window)]
                (window/set-full-screen window (not full-screen?)))
+             
+             (= :s key)
+             (core/schedule #(app/doui (speaker/toggle!)) 0)
              
              (and 
                (= :escape key)
@@ -261,6 +265,9 @@
                           :overview resources/icon-present
                           :present  resources/icon-overview)
                         (toggle-modes)))
+                    
+                    (template-icon-button resources/icon-speaker
+                      (speaker/toggle!))
                     
                     (ui/dynamic ctx [window       (:window ctx)
                                      full-screen? (window/full-screen? window)]

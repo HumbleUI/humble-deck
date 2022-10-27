@@ -9,8 +9,15 @@
 (def *window
   (promise))
 
+(def *speaker-window
+  (atom nil))
+
+(def *speaker-app
+  (atom nil))
+
 (defn redraw []
-  (window/request-frame @*window))
+  (window/request-frame @*window)
+  (some-> *speaker-window deref window/request-frame))
 
 (def *state
   (atom

@@ -64,20 +64,23 @@
                   (ui/label value))))))))))
 
 (def debug
-  (ui/dynamic ctx [{:keys []} ctx]
-    (ui/center
-      (ui/column
+  (ui/center
+    (ui/column
+      (ui/clickable
+        {:on-click (fn [_] (swap! debug/*enabled? not))}
         (ui/row
           (ui/valign 0.5
             (ui/toggle debug/*enabled?))
-          (ui/gap 2 0)
+          (ui/gap 5 0)
           (ui/valign 0.5
-            (ui/label "Debug info")))
-        (ui/gap 0 10)
+            (ui/label "Debug info"))))
+      (ui/gap 0 10)
+      (ui/clickable
+        {:on-click (fn [_] (swap! state/*image-snapshot? not))}
         (ui/row
           (ui/valign 0.5
             (ui/toggle state/*image-snapshot?))
-          (ui/gap 2 0)
+          (ui/gap 5 0)
           (ui/valign 0.5
             (ui/label "Cache previews")))))))
 
