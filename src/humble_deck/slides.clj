@@ -3,10 +3,15 @@
     [humble-deck.resources :as resources]
     [humble-deck.state :as state]
     [humble-deck.templates :as templates]
+    [io.github.humbleui.core :as core]
     [io.github.humbleui.debug :as debug]
     [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
-    [io.github.humbleui.ui :as ui]))
+    [io.github.humbleui.protocols :as protocols]
+    [io.github.humbleui.ui :as ui]
+    [io.github.humbleui.ui.focusable :as focusable])
+  (:import
+    [java.lang AutoCloseable]))
 
 (def *counter
   (atom 1))
@@ -21,47 +26,82 @@
   (atom {:text ""
          :placeholder "Edit me"}))
 
+(core/deftype+ Unfocus [child ^:mut child-rect]
+  protocols/IComponent
+  (-measure [this ctx cs]
+    (core/measure child ctx cs))
+  
+  (-draw [this ctx ^IRect rect ^Canvas canvas]
+    (set! child-rect rect)
+    (core/draw-child child ctx child-rect canvas))
+  
+  (-event [this ctx event]
+    (or
+      (core/event-child child ctx event)
+      (when (and
+              (= :mouse-button (:event event))
+              (:pressed? event)
+              (core/rect-contains? child-rect (core/ipoint (:x event) (:y event))))
+        (apply core/eager-or
+          (for [cmp (@#'focusable/focused this)]
+            (do
+              (protocols/-set! cmp :focused? false)
+              true))))))
+  
+  (-iterate [this ctx cb]
+    (or
+      (cb this)
+      (protocols/-iterate child ctx cb)))
+  
+  AutoCloseable
+  (close [_]
+    (core/child-close child)))
+
+(defn unfocus [child]
+  (->Unfocus child nil))
+
 (def demo
   (ui/dynamic ctx [{:keys [scale]} ctx]
-    (ui/center
-      (ui/width (* scale 80)
-        (ui/column            
-          (ui/button (fn [] (swap! *counter inc) (state/redraw))
-            (ui/label "Click me"))
-          (ui/gap 0 (* scale 10))
+    (unfocus
+      (ui/center
+        (ui/width (* scale 80)
+          (ui/column            
+            (ui/button (fn [] (swap! *counter inc) (state/redraw))
+              (ui/label "Click me"))
+            (ui/gap 0 (* scale 10))
+              
+            (ui/halign 0
+              (ui/dynamic _ [counter @*counter]
+                (ui/label (str "Clicks: " counter))))
+            (ui/gap 0 (* scale 10))
             
-          (ui/halign 0
-            (ui/dynamic _ [counter @*counter]
-              (ui/label (str "Clicks: " counter))))
-          (ui/gap 0 (* scale 10))
-          
-          (ui/text-field *text)
-          (ui/gap 0 (* scale 10))
-            
-          (ui/halign 0
-            (ui/checkbox *checkbox
-              (ui/label "Check me")))
-          (ui/gap 0 (* scale 10))
-            
-          (ui/halign 0
-            (ui/row
-              (ui/valign 0.5
-                (ui/toggle *checkbox))
-              (ui/gap (* scale 1) 0)
-              (ui/clickable
-                {:on-click (fn [_] (swap! *checkbox not))}
+            (ui/text-field *text)
+            (ui/gap 0 (* scale 10))
+              
+            (ui/halign 0
+              (ui/checkbox *checkbox
+                (ui/label "Check me")))
+            (ui/gap 0 (* scale 10))
+              
+            (ui/halign 0
+              (ui/row
                 (ui/valign 0.5
-                  (ui/label "Toggle me")))))
-          (ui/gap 0 (* scale 10))
-          
-          (ui/row
-            [:stretch 1
-              (ui/slider *slider)]
-            (ui/gap (* scale 2) 0)
-            (ui/max-width [(ui/label "100")]
-              (ui/valign 0.5
-                (ui/dynamic _ [value (:value @*slider)]
-                  (ui/label value))))))))))
+                  (ui/toggle *checkbox))
+                (ui/gap (* scale 1) 0)
+                (ui/clickable
+                  {:on-click (fn [_] (swap! *checkbox not))}
+                  (ui/valign 0.5
+                    (ui/label "Toggle me")))))
+            (ui/gap 0 (* scale 10))
+            
+            (ui/row
+              [:stretch 1
+               (ui/slider *slider)]
+              (ui/gap (* scale 2) 0)
+              (ui/max-width [(ui/label "100")]
+                (ui/valign 0.5
+                  (ui/dynamic _ [value (:value @*slider)]
+                    (ui/label value)))))))))))
 
 (def debug
   (ui/center

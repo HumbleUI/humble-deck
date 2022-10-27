@@ -27,7 +27,6 @@
           (ui/with-context
             (merge
               {:face-ui   resources/typeface-regular
-               :font-ui   font-body
                :font-body font-body
                :font-h1   font-h1
                :font-code font-code
