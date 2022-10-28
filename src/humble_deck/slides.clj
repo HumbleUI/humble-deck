@@ -164,8 +164,8 @@
    
    [(templates/label "2.\nPeople are OK\nwith non-native UI")]
 
-   [(templates/svg {:bg 0xFFF3F3F3} "buttons 0.svg")
-    (templates/image "buttons 1.jpg")]
+   [(templates/svg {:bg 0xFFF3F3F3} "buttons 0.svg")]
+   [(templates/image {:bg 0xFF162D3F} "buttons 1.jpg")]
    
    [(templates/label "3.\nThere is no good alternative")]
    
@@ -236,10 +236,16 @@
      "Child chooses their own size"
      "(-measure child space)")
    
+   [(templates/svg "align 0.svg")
+    (templates/svg "align 1.svg")
+    (templates/svg "align 2.svg")
+    (templates/svg "align 3.svg")
+    (templates/svg "align 4.svg")
+    (templates/svg "align 5.svg")]
+   
    [(templates/section "Composable components")]
    [(templates/image "attributes.jpg")]
-   [(templates/svg "buttons 2.svg")]
-   
+   [(templates/svg "comps 0.svg")]
    [(templates/code
       "
 (defn button [opts]
@@ -249,19 +255,21 @@
         (rect (:fill opts)
           (padding (:padding opts)
             (center
-              (label (:caption opts)))))))))")
-    (templates/code
+              (label (:caption opts)))))))))")]
+   [(templates/svg "comps 1.svg")]
+   [(templates/code
       "
 (defn button2 [opts]
   (hoverable {}
-    (clickable {:on-click (:on-click opts)}
-−     (clip-rrect (:radius opts)
+    (clickable {:on-click (:on-click opts)})))
+−     (clip-rrect (:radius opts))
 +     (clip-diagonal (:radius opts)
         (rect (:fill opts)
           (padding (:padding opts)
             (center
-              (label (:caption opts)))))))))")
-    (templates/code
+              (label (:caption opts))))))")]
+   [(templates/svg "comps 2.svg")]
+   [(templates/code
       "
 (defn button3 [opts]
   (hoverable {}
@@ -280,6 +288,7 @@
    [(templates/svg "capsize 1.svg")]
    [(templates/svg "capsize 2.svg")]
    [(templates/svg "capsize 3.svg")]
+   [(templates/svg "capsize 4.svg")]
    
    (templates/list "Also"
      "Wide Color Gamut"

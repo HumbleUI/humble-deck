@@ -40,4 +40,4 @@
      :min   0}))
 
 (def *image-snapshot?
-  (atom false))
+  (atom true))

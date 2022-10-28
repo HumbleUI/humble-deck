@@ -37,10 +37,15 @@
                  (ui/halign 0
                    (ui/label {:font font-code} line)))))))))))
 
-(defn image [name]
-  (delay
-    (scaler/scaler
-      (ui/image (io/file "slides" name)))))
+(defn image
+  ([name]
+   (image nil name))
+  ([opts name]
+   (let [{:keys [bg] :or {bg 0xFFFFFFFF}} opts]
+     (delay
+       (ui/rect (paint/fill bg)
+         (scaler/scaler
+           (ui/image (io/file "slides" name))))))))
 
 (defn svg
   ([name]
