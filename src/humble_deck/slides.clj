@@ -132,16 +132,21 @@
     (templates/svg "platforms 2.svg")
     (templates/svg "platforms 3.svg")]
    
-   [(delay
-      (ui/stack
-        @(templates/image "native.jpg")
-        @(templates/section "NATIVE")))]
+   [(templates/section "Native")]
    
    (templates/list "Native is"
      "$$$$"
      "Organizationally Complicated"
-     "Kinda pointless")
+     "Kinda pointless"
+     "What is native?")
 
+   [(delay
+      (ui/stack
+        @(templates/image "native.jpg")
+        @(templates/section "What is native?")))]
+
+   [(templates/section "Cross-platform")]
+   
    [(templates/label "QT")
     (templates/label "QT\nis C++")]
 
@@ -349,6 +354,9 @@
      "Viewports"
      "Distribution"
      "Testing and adoption")
+   
+   [(templates/section "One more thing...")]
+   [(templates/image {:bg 0xFF8F6D4B} "stickers.jpg")]
    
    [(templates/svg "links.svg")]
    [(templates/svg "questions.svg")]
