@@ -334,6 +334,7 @@
      "but without browser")
    
    [(templates/animation "reload.webp")]
+   [(templates/image "power.jpg")]
    
    (templates/list "Status"
      "Active development"
@@ -350,8 +351,8 @@
      "Testing and adoption")
    
    [(templates/svg "links.svg")]
-   
-   [(templates/label "Thank you!\nQuestions?")]])
+   [(templates/svg "questions.svg")]
+   [(templates/label "Thank you!")]])
 
 (swap! state/*slider
   assoc :max (dec (count slides)))
