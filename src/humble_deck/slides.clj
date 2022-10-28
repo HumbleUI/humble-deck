@@ -261,13 +261,13 @@
       "
 (defn button2 [opts]
   (hoverable {}
-    (clickable {:on-click (:on-click opts)})))
-−     (clip-rrect (:radius opts))
+    (clickable {:on-click (:on-click opts)}
+−     (clip-rrect (:radius opts)
 +     (clip-diagonal (:radius opts)
         (rect (:fill opts)
           (padding (:padding opts)
             (center
-              (label (:caption opts))))))")]
+              (label (:caption opts)))))))))")]
    [(templates/svg "comps 2.svg")]
    [(templates/code
       "
@@ -310,10 +310,12 @@
    [(templates/section "REPL + UI = SUPER🦸‍♂️🦸‍♀️POVER")]
    
    (templates/list "REPL + UI"
-     "Instant Feedback"
+     "instant Feedback"
      "play & experiment"
      "like figwheel/shadow-cljs"
      "but without browser")
+   
+   [(templates/animation "reload.webp")]
    
    (templates/list "Status"
      "Active development"

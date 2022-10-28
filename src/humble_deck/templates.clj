@@ -47,6 +47,16 @@
          (scaler/scaler
            (ui/image (io/file "slides" name))))))))
 
+(defn animation
+  ([name]
+   (animation nil name))
+  ([opts name]
+   (let [{:keys [bg] :or {bg 0xFFFFFFFF}} opts]
+     (delay
+       (ui/rect (paint/fill bg)
+         (scaler/scaler
+           (ui/animation (io/file "slides" name))))))))
+
 (defn svg
   ([name]
    (svg nil name))
