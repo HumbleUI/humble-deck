@@ -27,10 +27,15 @@
      (ui/center
        (ui/dynamic ctx [{:keys [leading font-code]} ctx]           
          (ui/column
-           (interpose (ui/gap 0 (* 1.5 leading))
-             (for [line (str/split s #"\n")]
-               (ui/halign 0
-                 (ui/label {:font font-code} line))))))))))
+           (for [line (remove str/blank? (str/split s #"\n"))
+                 :let [color (cond
+                               (str/starts-with? line "−") 0xFFF5C3C1
+                               (str/starts-with? line "+") 0xFFBAF0C0
+                               :else 0xFFFFFFFF)]]
+             (ui/rect (paint/fill color)
+               (ui/padding (* 0.75 leading)
+                 (ui/halign 0
+                   (ui/label {:font font-code} line)))))))))))
 
 (defn image [name]
   (delay

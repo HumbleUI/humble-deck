@@ -252,20 +252,23 @@
               (label (:caption opts)))))))))")
     (templates/code
       "
-(defn button [opts]
+(defn button2 [opts]
   (hoverable {}
     (clickable {:on-click (:on-click opts)}
-      (clip-diagonal (:radius opts)
+−     (clip-rrect (:radius opts)
++     (clip-diagonal (:radius opts)
         (rect (:fill opts)
           (padding (:padding opts)
             (center
               (label (:caption opts)))))))))")
     (templates/code
-      "(defn button [opts]
+      "
+(defn button3 [opts]
   (hoverable {}
     (clickable {:on-click (:on-click opts)}
-      (shadow (:shadow opts)
-        (clip-diagonal (:radius opts)
++     (shadow (:shadow opts)
+−       (clip-rrect (:radius opts)
++       (clip-diagonal (:radius opts)
           (rect (:fill opts)
             (padding (:padding opts)
               (center
