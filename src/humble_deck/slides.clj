@@ -175,9 +175,9 @@
      "UI Framework"
      "For desktop apps"
      "~ Electron"
-     "No browser"
-     "No DOM"
      "No JS"
+     "No DOM"
+     "No browser"
      "JVM Clojure only")
    
    [(templates/section "DEMO")]
@@ -228,6 +228,13 @@
    
    [(templates/svg "architecture.svg")]
    
+   (templates/list "API"
+     "Not immediate mode"
+     "Not pure functional"
+     ["Good old OOP" "Good old component tree"]
+     "Practical"
+     ["Dream: indistinguashable from native" "Dream: native-quality"])
+   
    [(templates/section "Killer features")]
    
    (templates/list "Simple layout"
@@ -243,7 +250,11 @@
     (templates/svg "align 4.svg")
     (templates/svg "align 5.svg")]
    
-   [(templates/section "Composable components")]
+   (templates/list "Composable components"
+     "Simple reusable pieces"
+     "Low AND high-level"
+     "Build your own components")
+
    [(templates/image "attributes.jpg")]
    [(templates/svg "comps 0.svg")]
    [(templates/code
@@ -282,6 +293,13 @@
               (center
                 (label (:caption opts))))))))))")]
    
+   (templates/list "Small reusable parts are"
+     "Easier to write"
+     "Easier to combine"
+     "Have less reasons to change"
+     "More likely to fit your problem"
+     "Require less defaults undoing")
+   
    [(templates/section "Sane text metrics")]
    
    [(templates/svg "capsize 0.svg")]
@@ -298,7 +316,7 @@
      "Pixel-perfect scaled graphics"
      "...")
 
-   (templates/list "Clojure"
+   (templates/list "Clojure-first"
      "❤️"
      "High-level"
      "Easy to use"
@@ -323,7 +341,7 @@
      ["Everything changes"
       "Everything changes. A lot"])
           
-   (templates/list "Missing pieces"
+   (templates/list "How you can help"
      "JWM / OS integration (Java, C++)"
      "State management"
      "Rich text"
