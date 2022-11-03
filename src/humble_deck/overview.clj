@@ -1,13 +1,10 @@
 (ns humble-deck.overview
   (:require
     [clojure.math :as math]
-    [humble-deck.resources :as resources]
-    [humble-deck.slides :as slides]
+    [humble-deck.common :as common]
     [humble-deck.state :as state]
-    [humble-deck.templates :as templates]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
-    [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
     [io.github.humbleui.ui :as ui]
@@ -83,7 +80,6 @@
                                  (> (+ slide-y scroll) (- (:bottom rect) (+ half-slide-h)))
                                  (protocols/-set! (:child child) :offset (- (- (:bottom rect) half-slide-h) slide-y (* scale padding))))
               
-                scroll         (-> child :child :offset)
                 slide-y        (+ slide-y (-> child :child :offset))
               
                 screen-x       (+ (:x rect) (/ (:width rect) 2))
@@ -159,8 +155,8 @@
         (ui/vscrollbar
           (ui/vscroll
             (ui/padding padding padding padding (+ padding 40)
-              (let [full-len  (-> (count slides/slides) (dec) (quot per-row) (inc) (* per-row))
-                    slides'   (concat slides/slides (repeat (- full-len (count slides/slides)) nil))]
+              (let [full-len  (-> (count @state/*slides) (dec) (quot per-row) (inc) (* per-row))
+                    slides'   (concat @state/*slides (repeat (- full-len (count @state/*slides)) nil))]
                 (ui/column
                   (interpose (ui/gap 0 padding)
                     (for [row (partition per-row (core/zip (range) slides'))]
@@ -169,11 +165,9 @@
                           (interpose (ui/gap padding 0)
                             (for [[idx slide] row]
                               (when slide
-                                (let [subslide   (peek slide)
-                                      subslide'  (cond-> subslide
-                                                   (instance? clojure.lang.IDeref subslide) deref)
+                                (let [subslide   (-> slide peek common/maybe-deref)
                                       slide-comp (cond->> (ui/rect (paint/fill 0xFFFFFFFF)
-                                                            (slide-preview bounds subslide'))
+                                                            (slide-preview bounds subslide))
                                                    image-snapshot? (ui/image-snapshot {:scale (core/point 1 1)}))]
                                   (ui/width slide-w
                                     (ui/clickable
@@ -181,7 +175,7 @@
                                        (fn [_]
                                          (swap! state/*state assoc
                                            :slide           idx
-                                           :subslide        (dec (count (nth slides/slides idx)))
+                                           :subslide        (dec (count (nth @state/*slides idx)))
                                            :animation-start (core/now)))}
                                       (ui/clip-rrect 4
                                         (ui/dynamic ctx [hover? (let [{:hui/keys [hovered?]} ctx

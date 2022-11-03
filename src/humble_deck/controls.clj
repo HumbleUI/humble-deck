@@ -1,8 +1,7 @@
 (ns humble-deck.controls
   (:require
+    [humble-deck.common :as common]
     [humble-deck.resources :as resources]
-    [humble-deck.slides :as slides]
-    [humble-deck.speaker :as speaker]
     [humble-deck.state :as state]
     [io.github.humbleui.app :as app]
     [io.github.humbleui.canvas :as canvas]
@@ -42,34 +41,6 @@
     :overview (swap! state/*state assoc
                 :animation-start (core/now))))
 
-(defn prev-slide []
-  (swap! state/*state
-    #(cond
-       (> (:subslide %) 0)
-       (update % :subslide dec)
-                                      
-       (> (:slide %) 0)
-       (-> %
-         (update :slide dec)
-         (assoc :subslide (dec (count (nth slides/slides (dec (:slide %)))))))
-                                      
-       :else
-       %)))
-
-(defn next-slide []
-  (swap! state/*state
-    #(cond
-       (< (:subslide %) (dec (count (nth slides/slides (:slide %)))))
-       (update % :subslide inc)
-                                    
-       (< (:slide %) (dec (count slides/slides)))
-       (-> %
-         (update :slide inc)
-         (assoc :subslide 0))
-                                    
-       :else
-       %)))
-
 (defn key-listener [child]
   (ui/key-listener
     {:on-key-down
@@ -82,34 +53,22 @@
          (when
            (cond
              (and cmd? (prev-key? key))
-             (swap! state/*state assoc
-               :slide 0
-               :subslide 0)
+             (swap! state/*state common/slide-first)
 
              (and cmd? (next-key? key))
-             (swap! state/*state assoc
-               :slide    (dec (count slides/slides))
-               :subslide (dec (count (peek slides/slides))))
+             (swap! state/*state common/slide-last)
 
              (and option? (prev-key? key))
-             (swap! state/*state
-               #(assoc %
-                  :slide    (max 0 (- (:slide %) 10))
-                  :subslide 0))
+             (swap! state/*state common/slide-prev-10)
              
              (and option? (next-key? key))
-             (swap! state/*state
-               #(assoc %
-                  :slide    (min
-                              (dec (count slides/slides))
-                              (- (:slide %) 10))
-                  :subslide 0))
+             (swap! state/*state common/slide-next-10)
              
              (prev-key? key)
-             (prev-slide)
+             (swap! state/*state #(or (common/slide-prev %) %))
 
              (next-key? key)
-             (next-slide)
+             (swap! state/*state #(or (common/slide-next %) %))
 
              (= :t key)
              (toggle-modes)
@@ -119,7 +78,7 @@
                (window/set-full-screen window (not full-screen?)))
              
              (= :s key)
-             (core/schedule #(app/doui (speaker/toggle!)) 0)
+             (core/schedule #(app/doui (common/speaker-toggle!)) 0)
              
              (and 
                (= :escape key)
@@ -214,77 +173,82 @@
 
   (-iterate [this ctx cb]))
 
+(def controls-impl
+  (ui/with-context
+    {:fill-text                 (paint/fill 0xE0FFFFFF)
+     :hui.button/bg-active      (paint/fill 0x80000000)
+     :hui.button/bg-hovered     (paint/fill 0x40000000)
+     :hui.button/bg             (paint/fill 0x00000000)
+     :hui.button/padding-left   0
+     :hui.button/padding-top    0
+     :hui.button/padding-right  0
+     :hui.button/padding-bottom 0
+     :hui.button/border-radius  0}
+    (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
+      (ui/rect (paint/fill 0x50000000)
+        (ui/dynamic _ [{:keys [mode]} @state/*state]
+          (ui/row
+            (when (= :present mode)
+              (template-icon-button resources/icon-prev
+                (swap! state/*state #(or (common/slide-prev %) %))))
+
+            (when (= :present mode)
+              (template-icon-button resources/icon-next
+                (swap! state/*state #(or (common/slide-next %) %))))
+
+            (ui/gap 14 0)
+                                        
+            [:stretch 1
+             (when (= :present mode)
+               (ui/valign 0.5
+                 (ui/slider
+                   {:track-active   (->SliderTrackActive)
+                    :track-inactive (->SliderTrackInactive)
+                    :thumb          (->SliderThumb)}
+                   state/*slider)))]
+                      
+            (ui/gap 14 0)
+                      
+            (ui/dynamic _ [mode (:mode @state/*state)]
+              (template-icon-button
+                (case mode
+                  :overview resources/icon-present
+                  :present  resources/icon-overview)
+                (toggle-modes)))
+                      
+            (template-icon-button resources/icon-speaker
+              (common/speaker-toggle!))
+                      
+            (ui/dynamic ctx [window       (:window ctx)
+                             full-screen? (window/full-screen? window)]
+              (template-icon-button 
+                (if full-screen?
+                  resources/icon-windowed
+                  resources/icon-full-screen)
+                (window/set-full-screen window (not full-screen?))))))))))
+
 (def controls
   (ui/mouse-listener
     {:on-move (fn [_] (show-controls!) false)
      :on-over (fn [_] (show-controls!))
      :on-out  (fn [_] (hide-controls!))}
     (ui/valign 1
-      (ui/dynamic _ [{:keys [controls? mode]} @state/*state]
+      (ui/dynamic _ [{:keys [controls?]} @state/*state]
         (if (not controls?)
           (ui/gap 0 0)
           (ui/mouse-listener
             {:on-move (fn [_] (cancel-timer!))}
-            (ui/with-context
-              {:fill-text                 (paint/fill 0xE0FFFFFF)
-               :hui.button/bg-active      (paint/fill 0x80000000)
-               :hui.button/bg-hovered     (paint/fill 0x40000000)
-               :hui.button/bg             (paint/fill 0x00000000)
-               :hui.button/padding-left   0
-               :hui.button/padding-top    0
-               :hui.button/padding-right  0
-               :hui.button/padding-bottom 0
-               :hui.button/border-radius  0}
-              (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
-                (ui/rect (paint/fill 0x50000000)
-                  (ui/row
-                    (when (= :present mode)
-                      (template-icon-button resources/icon-prev
-                        (prev-slide)))
-
-                    (when (= :present mode)
-                      (template-icon-button resources/icon-next
-                        (next-slide)))
-
-                    (ui/gap 14 0)
-                                      
-                    [:stretch 1
-                     (when (= :present mode)
-                       (ui/valign 0.5
-                         (ui/slider
-                           {:track-active   (->SliderTrackActive)
-                            :track-inactive (->SliderTrackInactive)
-                            :thumb          (->SliderThumb)}
-                           state/*slider)))]
-                    
-                    (ui/gap 14 0)
-                    
-                    (ui/dynamic _ [mode (:mode @state/*state)]
-                      (template-icon-button
-                        (case mode
-                          :overview resources/icon-present
-                          :present  resources/icon-overview)
-                        (toggle-modes)))
-                    
-                    (template-icon-button resources/icon-speaker
-                      (speaker/toggle!))
-                    
-                    (ui/dynamic ctx [window       (:window ctx)
-                                     full-screen? (window/full-screen? window)]
-                      (template-icon-button 
-                        (if full-screen?
-                          resources/icon-windowed
-                          resources/icon-full-screen)
-                        (window/set-full-screen window (not full-screen?))))))))))))))
+            controls-impl))))))
+            
 
 (add-watch state/*state ::update-slider
-  (fn [_ _ old new]
+  (fn [_ _ _ new]
     (when (not= (:slide new) (:value @state/*slider))
       (swap! state/*slider assoc :value (:slide new)))))
 
 (add-watch state/*slider ::rewind
-  (fn [_ _ old new]
+  (fn [_ _ _ new]
     (when (not= (:value new) (:slide @state/*state))
       (swap! state/*state assoc
         :slide    (:value new)
-        :subslide (dec (count (nth slides/slides (:value new))))))))
+        :subslide (dec (count (nth @state/*slides (:value new))))))))

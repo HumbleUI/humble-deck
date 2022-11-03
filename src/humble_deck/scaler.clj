@@ -1,6 +1,5 @@
 (ns humble-deck.scaler
   (:require
-    [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.protocols :as protocols])
   (:import

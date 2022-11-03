@@ -1,7 +1,8 @@
 (ns ^{:clojure.tools.namespace.repl/load false}
-  humble-deck.state
-  (:require
-    [io.github.humbleui.window :as window]))
+  humble-deck.state)
+
+(def *slides
+  (atom nil))
 
 (def *app
   (atom nil))
@@ -15,10 +16,6 @@
 (def *speaker-app
   (atom nil))
 
-(defn redraw []
-  (window/request-frame @*window)
-  (some-> *speaker-window deref window/request-frame))
-
 (def *state
   (atom
     {:slide           0
@@ -27,12 +24,8 @@
      :animation-start nil
      :animation-end   nil
      :controls?       true
-     :controls-timer  nil}))
-
-(add-watch *state ::redraw
-  (fn [_ _ old new]
-    (when (not= old new)
-      (redraw))))
+     :controls-timer  nil
+     :speaker-timer   nil}))
 
 (def *slider
   (atom

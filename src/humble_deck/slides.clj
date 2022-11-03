@@ -1,11 +1,10 @@
 (ns humble-deck.slides
   (:require
-    [humble-deck.resources :as resources]
+    [humble-deck.common :as common]
     [humble-deck.state :as state]
     [humble-deck.templates :as templates]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.debug :as debug]
-    [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.protocols :as protocols]
     [io.github.humbleui.ui :as ui]
@@ -66,7 +65,7 @@
       (ui/center
         (ui/width (* scale 80)
           (ui/column            
-            (ui/button (fn [] (swap! *counter inc) (state/redraw))
+            (ui/button (fn [] (swap! *counter inc) (common/redraw))
               (ui/label "Click me"))
             (ui/gap 0 (* scale 10))
               
@@ -364,10 +363,3 @@
 
 (swap! state/*slider
   assoc :max (dec (count slides)))
-
-(def slide  
-  (ui/rect (paint/fill 0xFFFFFFFF)
-    (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
-      (let [slide (-> slides (nth slide) (nth subslide))]
-        (cond-> slide
-          (instance? clojure.lang.IDeref slide) deref)))))

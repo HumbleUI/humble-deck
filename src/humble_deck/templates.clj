@@ -5,12 +5,11 @@
     [clojure.string :as str]
     [humble-deck.scaler :as scaler]
     [io.github.humbleui.paint :as paint]
-    [io.github.humbleui.typeface :as typeface]
     [io.github.humbleui.ui :as ui]))
 
 (defn label
   ([s] (label {} s))
-  ([opts s]
+  ([_opts s]
    (delay
      (ui/center
        (ui/dynamic ctx [{:keys [font-body leading]} ctx]
@@ -22,7 +21,7 @@
 
 (defn code
   ([s] (code {} s))
-  ([opts s]
+  ([_opts s]
    (delay
      (ui/center
        (ui/dynamic ctx [{:keys [leading font-code]} ctx]           

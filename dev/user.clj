@@ -4,6 +4,7 @@
     [humble-deck.main :as main]
     [humble-deck.state :as state]
     [io.github.humbleui.app :as app]
+    [io.github.humbleui.core :as core]
     [io.github.humbleui.debug :as debug]
     [io.github.humbleui.window :as window]
     [nrepl.cmdline :as nrepl]
@@ -17,7 +18,10 @@
       #_(window/set-z-order window :floating))))
 
 (defn reload []
-  (ns/refresh :after 'humble-deck.state/redraw))
+  (let [res (ns/refresh :after 'humble-deck.common/redraw)]
+    (if (instance? Throwable res)
+      (throw res)
+      res)))
 
 (defn -main [& args]
   (ns/set-refresh-dirs "src")
