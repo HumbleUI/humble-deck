@@ -32,3 +32,15 @@
 
 (def icon-windowed
   (ui/svg "resources/windowed.svg"))
+
+(def icon-talk-reset
+  (ui/svg "resources/talk-reset.svg"))
+
+(def icon-talk-pause
+  (ui/svg "resources/talk-pause.svg"))
+
+(def icon-talk-resume
+  (ui/svg "resources/talk-resume.svg"))
+
+(def icon-clock
+  (ui/svg "resources/clock.svg"))

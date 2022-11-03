@@ -25,7 +25,9 @@
      :animation-end   nil
      :controls?       true
      :controls-timer  nil
-     :speaker-timer   nil}))
+     :speaker-timer   nil
+     :speaker-time    0
+     :speaker-start   nil}))
 
 (def *slider
   (atom
@@ -34,3 +36,6 @@
 
 (def *image-snapshot?
   (atom true))
+
+(def *talk-duration
+  (atom (* 40 60 1000)))

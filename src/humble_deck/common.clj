@@ -6,16 +6,34 @@
     [io.github.humbleui.font :as font]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui]
-    [io.github.humbleui.window :as window]))
+    [io.github.humbleui.window :as window])
+  (:import
+    [java.time Duration Instant LocalTime ZoneId]
+    [java.time.format DateTimeFormatter]))
 
 (defn maybe-deref [ref]
   (cond-> ref
     (instance? clojure.lang.IDeref ref) deref))
 
+(defn time-format-HH-mm [ms]
+  (let [i (Instant/ofEpochMilli ms)
+        t (LocalTime/ofInstant i (ZoneId/systemDefault))]
+    (.format t (DateTimeFormatter/ofPattern "HH:mm"))))
+
+(defn duration-format-mm-ss [ms]
+  (let [d (Duration/ofMillis ms)]
+    (format "%02d:%02d" (.toMinutes d) (.toSecondsPart d))))
+
 (defn redraw []
   (some-> state/*window         deref window/request-frame)
   (some-> state/*speaker-window deref window/request-frame)
   :success)
+
+(defmacro template-icon-button [icon & on-click]
+  `(ui/button (fn [] ~@on-click) 
+     (ui/width 40
+       (ui/height 40
+         ~icon))))
 
 (defn speaker-open! []
   (swap! state/*state

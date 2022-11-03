@@ -2,7 +2,14 @@ Presentation Software built with [Humble UI](https://github.com/HumbleUI/HumbleU
 
 ![](./extras/screenshot.png)
 
-![](./extras/screenshot2.png)
+Features:
+
+- Write slides in Clojure
+- Text, section, list, image
+- Slide groups for slight variations
+- PNG, JPG, SVG, GIF, WEBP
+- Speaker view with current clock, time spent and time left
+- Grid view and slider for quick navigation
 
 # Running
 

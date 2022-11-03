@@ -87,12 +87,6 @@
            (hide-controls!))))}
     child))
 
-(defmacro template-icon-button [icon & on-click]
-  `(ui/button (fn [] ~@on-click) 
-     (ui/width 40
-       (ui/height 40
-         ~icon))))
-
 (def thumb-w
   3)
 
@@ -188,40 +182,37 @@
       (ui/rect (paint/fill 0x50000000)
         (ui/dynamic _ [{:keys [mode]} @state/*state]
           (ui/row
-            (when (= :present mode)
-              (template-icon-button resources/icon-prev
-                (swap! state/*state #(or (common/slide-prev %) %))))
+            (common/template-icon-button resources/icon-prev
+              (swap! state/*state #(or (common/slide-prev %) %)))
 
-            (when (= :present mode)
-              (template-icon-button resources/icon-next
-                (swap! state/*state #(or (common/slide-next %) %))))
+            (common/template-icon-button resources/icon-next
+              (swap! state/*state #(or (common/slide-next %) %)))
 
             (ui/gap 14 0)
                                         
             [:stretch 1
-             (when (= :present mode)
-               (ui/valign 0.5
-                 (ui/slider
-                   {:track-active   (->SliderTrackActive)
-                    :track-inactive (->SliderTrackInactive)
-                    :thumb          (->SliderThumb)}
-                   state/*slider)))]
+             (ui/valign 0.5
+               (ui/slider
+                 {:track-active   (->SliderTrackActive)
+                  :track-inactive (->SliderTrackInactive)
+                  :thumb          (->SliderThumb)}
+                 state/*slider))]
                       
             (ui/gap 14 0)
                       
             (ui/dynamic _ [mode (:mode @state/*state)]
-              (template-icon-button
+              (common/template-icon-button
                 (case mode
                   :overview resources/icon-present
                   :present  resources/icon-overview)
                 (toggle-modes)))
                       
-            (template-icon-button resources/icon-speaker
+            (common/template-icon-button resources/icon-speaker
               (common/speaker-toggle!))
                       
             (ui/dynamic ctx [window       (:window ctx)
                              full-screen? (window/full-screen? window)]
-              (template-icon-button 
+              (common/template-icon-button 
                 (if full-screen?
                   resources/icon-windowed
                   resources/icon-full-screen)
