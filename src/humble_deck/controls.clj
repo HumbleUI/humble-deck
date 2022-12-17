@@ -109,7 +109,7 @@
   protocols/IComponent
   (-measure [_ ctx cs]
     (let [{:keys [scale]} ctx]
-      (core/size (* scale thumb-w) (* scale thumb-h))))
+      (core/isize (* scale thumb-w) (* scale thumb-h))))
 
   (-draw [this ctx rect ^Canvas canvas]
     (let [{:keys [scale]} ctx
