@@ -36,12 +36,15 @@
 
 (defn -main [& _args]
   (ui/start-app!
-    (deliver state/*window
-      (ui/window
-        {:title    "Humble Deck"
-         :mac-icon "resources/icon.icns"
-         :bg-color 0xFFFFFFFF}
-        state/*app)))
+   (deliver state/*window
+            (ui/window
+             {:title    "Humble Deck"
+              :mac-icon "resources/icon.icns"
+              :bg-color 0xFFFFFFFF}
+             state/*app)))
+  ;; NOTE:
+  ;; Should assess whether we can use Metal or GL here.
+  ;; Might be having platform compatibility issues.
   (set! (.-_colorSpace ^LayerGLSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
-  ; (reset! debug/*enabled? true)
+                                        ; (reset! debug/*enabled? true)
   (common/redraw))
