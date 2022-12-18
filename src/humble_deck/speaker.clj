@@ -134,12 +134,12 @@
 (def speaker-app
   (controls/key-listener
     (ui/event-listener
-     EventWindowCloseRequest
+     {:capture? true}
      :key
      (fn [e ctx]
        (when (and
               (:pressed? e)
-              (modifiers :mac-command)
+              ((:modifiers e) :mac-command)
               (= :w (:key e)))
          (common/speaker-close!)))
 
@@ -147,8 +147,8 @@
      ;;  (fn [_]
      ;;    (reset! state/*speaker-window nil))
      ;;  :key
-     (fn [{:keys [pressed? modifiers key]}]
-       )
+     ;; (fn [{:keys [pressed? modifiers key]}]
+     ;;   )
 
 
      (common/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
