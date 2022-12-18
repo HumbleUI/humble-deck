@@ -11,7 +11,7 @@
   (:import
     [io.github.humbleui.skija ColorSpace]
     [io.github.humbleui.jwm Window]
-    [io.github.humbleui.jwm.skija LayerMetalSkija]))
+    [io.github.humbleui.jwm.skija LayerMetalSkija LayerGLSkija]))
 
 (def app
   (common/with-context
@@ -42,6 +42,6 @@
          :mac-icon "resources/icon.icns"
          :bg-color 0xFFFFFFFF}
         state/*app)))
-  (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
+  (set! (.-_colorSpace ^LayerGLSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
   ; (reset! debug/*enabled? true)
   (common/redraw))
