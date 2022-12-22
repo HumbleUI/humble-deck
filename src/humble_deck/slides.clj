@@ -60,7 +60,7 @@
   (->Unfocus child nil))
 
 (def demo
-  (ui/dynamic ctx [{:keys [scale]} ctx]
+  (ui/with-scale scale
     (unfocus
       (ui/center
         (ui/width (* scale 80)

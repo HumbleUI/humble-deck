@@ -6,18 +6,18 @@
     [humble-deck.slides :as slides]
     [humble-deck.speaker :as speaker]
     [humble-deck.state :as state]
+    [io.github.humbleui.app :as app]
     [io.github.humbleui.debug :as debug]
     [io.github.humbleui.ui :as ui])
   (:import
     [io.github.humbleui.skija ColorSpace]
-    [io.github.humbleui.jwm Window]
-    [io.github.humbleui.jwm.skija LayerMetalSkija]))
+    [io.github.humbleui.jwm Window]))
 
 (def app
   (common/with-context
     (controls/key-listener
       (ui/stack
-        (ui/dynamic _ [mode (:mode @state/*state)]
+        (ui/dynamic _ [{:keys [mode]} @state/*state]
           (case mode
             :overview overview/overview
             :present  common/slide))
@@ -42,6 +42,7 @@
          :mac-icon "resources/icon.icns"
          :bg-color 0xFFFFFFFF}
         state/*app)))
-  (set! (.-_colorSpace ^LayerMetalSkija (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3))
+  (when (= :macos app/platform)
+    (set! (.-_colorSpace (.getLayer ^Window @state/*window)) (ColorSpace/getDisplayP3)))
   ; (reset! debug/*enabled? true)
   (common/redraw))

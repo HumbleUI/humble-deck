@@ -133,23 +133,22 @@
 
 (def speaker-app
   (controls/key-listener
-    (ui/event-listener
-      {:window-close-request
-       (fn [_]
-         (reset! state/*speaker-window nil))
-       :key
-       (fn [{:keys [pressed? modifiers key]}]
-         (when (and 
-                 pressed?
-                 (modifiers :mac-command)
-                 (= :w key))
-           (common/speaker-close!)))}
-      (common/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
-        (ui/column
-          [:stretch 1 time]
-          slides
-          [:stretch 1
-           (ui/valign 1
-             (ui/column
-               progress-controls
-               controls/controls-impl))])))))
+    (ui/event-listener :window-close-request
+      (fn [_ _]
+        (reset! state/*speaker-window nil))
+      (ui/event-listener :key
+        (fn [{:keys [pressed? modifiers key]} _]
+          (when (and 
+                  pressed?
+                  (modifiers :mac-command)
+                  (= :w key))
+            (common/speaker-close!)))
+        (common/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
+          (ui/column
+            [:stretch 1 time]
+            slides
+            [:stretch 1
+             (ui/valign 1
+               (ui/column
+                 progress-controls
+                 controls/controls-impl))]))))))
