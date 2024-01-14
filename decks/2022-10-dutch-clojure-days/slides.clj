@@ -1,4 +1,4 @@
-(ns humble-deck.slides
+(ns slides
   (:require
     [humble-deck.common :as common]
     [humble-deck.state :as state]

@@ -4,6 +4,7 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [humble-deck.scaler :as scaler]
+    [humble-deck.state :as state]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui]))
 
@@ -44,7 +45,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/image (io/file "slides" name))))))))
+           (ui/image (io/file "decks" state/deck name))))))))
 
 (defn animation
   ([name]
@@ -54,7 +55,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/animation (io/file "slides" name))))))))
+           (ui/animation (io/file "decks" state/deck name))))))))
 
 (defn svg
   ([name]
@@ -64,7 +65,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/svg (io/file "slides" name))))))))
+           (ui/svg (io/file "decks" state/deck name))))))))
 
 (defn section [name]
   (delay

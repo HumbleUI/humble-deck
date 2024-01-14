@@ -147,15 +147,17 @@
 
 (def overview
   (ui/with-bounds ::bounds
-    (ui/dynamic ctx [{:keys [scale]} ctx
+    (ui/dynamic ctx [{:keys [epoch]} @state/*state
+                     slides @state/*slides
+                     {:keys [scale]} ctx
                      bounds (::bounds ctx)
                      {:keys [per-row slide-w slide-h]} (slide-size bounds scale)
                      image-snapshot? @state/*image-snapshot?]
       (zoomer per-row slide-w slide-h
         (ui/vscrollbar
           (ui/padding padding padding padding (+ padding 40)
-            (let [full-len  (-> (count @state/*slides) (dec) (quot per-row) (inc) (* per-row))
-                  slides'   (concat @state/*slides (repeat (- full-len (count @state/*slides)) nil))]
+            (let [full-len (-> (count slides) (dec) (quot per-row) (inc) (* per-row))
+                  slides'  (concat slides (repeat (- full-len (count slides)) nil))]
               (ui/column
                 (interpose (ui/gap 0 padding)
                   (for [row (partition per-row (core/zip (range) slides'))]

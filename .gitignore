@@ -1,4 +1,5 @@
 .nrepl-port
+.repl-port
 hs_err_pid*.log
 .cpcache
 target

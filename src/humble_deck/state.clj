@@ -1,6 +1,9 @@
 (ns ^{:clojure.tools.namespace.repl/load false}
   humble-deck.state)
 
+(def deck
+  "2022-10-dutch-clojure-days")
+
 (def *slides
   (atom nil))
 
@@ -27,7 +30,8 @@
      :controls-timer  nil
      :speaker-timer   nil
      :speaker-time    0
-     :speaker-start   nil}))
+     :speaker-start   nil
+     :epoch           0}))
 
 (def *slider
   (atom

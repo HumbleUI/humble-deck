@@ -126,5 +126,5 @@
 
 (def slide
   (ui/rect (paint/fill 0xFFFFFFFF)
-    (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
+    (ui/dynamic _ [{:keys [slide subslide epoch]} @state/*state]
       (-> @state/*slides (nth slide) (nth subslide) maybe-deref))))

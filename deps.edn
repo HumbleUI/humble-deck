@@ -3,7 +3,6 @@
   io.github.humbleui/humbleui {:git/sha "3a831b8cf11c1d41dead3d900d773a2bf87488d5"}}
  :aliases
  {:dev {:extra-paths ["dev"]
-        :extra-deps {nrepl/nrepl {:mvn/version "1.0.0"}
-                     org.clojure/tools.namespace {:mvn/version "1.3.0"}}
+        :extra-deps {org.clojure/tools.namespace {:mvn/version "1.4.4"}}
         :jvm-opts ["-ea"]}}}
  
