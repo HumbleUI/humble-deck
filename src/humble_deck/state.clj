@@ -2,7 +2,8 @@
   humble-deck.state)
 
 (def deck
-  "2022-10-dutch-clojure-days")
+  #_"2022-10-dutch-clojure-days"
+  "2024-01-london-clojurians")
 
 (def *slides
   (atom nil))

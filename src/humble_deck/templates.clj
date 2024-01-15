@@ -84,8 +84,11 @@
         (ui/rect (paint/fill 0xFF000000)
           (ui/gap (* 2 unit) (* 2 unit)))))))
 
-(defn list [header & lines]
-  (let [labels (concat
+(defn list [& args]
+  (let [[opts header lines] (if (map? (first args))
+                              [(first args) (second args) (nnext args)]
+                              [{} (first args) (next args)])
+        labels (concat
                  [[(ui/dynamic ctx [{:keys [font-h1]} ctx]
                      (ui/label {:font font-h1} header))]]
                  (map
@@ -99,7 +102,7 @@
                        (if (sequential? line) line [line])))
                    lines))]
     (vec
-      (for [i (range 0 (count labels))
+      (for [i (range (:from opts 0) (count labels))
             j (range 0 (count (nth labels i)))]
         (delay
           (ui/center

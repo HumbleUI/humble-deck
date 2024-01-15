@@ -106,10 +106,10 @@
   (ui/center
     (ui/column
       (ui/clickable
-        {:on-click (fn [_] (swap! debug/*enabled? not))}
+        {:on-click (fn [_] (swap! protocols/*debug? not))}
         (ui/row
           (ui/valign 0.5
-            (ui/toggle debug/*enabled?))
+            (ui/toggle protocols/*debug?))
           (ui/gap 5 0)
           (ui/valign 0.5
             (ui/label "Debug info"))))
@@ -329,7 +329,7 @@
      "Threads"
      "REPL")
           
-   [(templates/section "REPL + UI = SUPER🦸‍♂️🦸‍♀️POVER")]
+   [(templates/section "REPL + UI = SUPER🦸‍♂️🦸‍♀️POWER")]
    
    (templates/list "REPL + UI"
      "instant Feedback"
