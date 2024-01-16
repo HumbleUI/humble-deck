@@ -10,14 +10,14 @@
 
 (defn label
   ([s] (label {} s))
-  ([_opts s]
+  ([opts s]
    (delay
      (ui/center
        (ui/dynamic ctx [{:keys [font-body leading]} ctx]
          (ui/column
            (interpose (ui/gap 0 leading)
              (for [line (str/split s #"\n")]
-               (ui/halign 0.5
+               (ui/halign (:halign opts 0.5)
                  (ui/label {:font font-body} line))))))))))
 
 (defn code
