@@ -29,10 +29,11 @@
    [(t/image {:bg 0xFF000000} "me.jpg")]
    [(t/svg "humbleui.svg")]
    (t/list "What is Humble UI?"
-     "Cross-platform"
-     "Desktop"
+     "Framework"
+     "For Clojure/JVM"
      "GUI"
-     "For Clojure")
+     "Desktop"
+     "Cross-platform")
    [(t/image "demo_todomvc.png")]
    [controls]
    
@@ -45,9 +46,9 @@
           @(t/label "1. People WANT apps"))))]
    [(t/label "2. No such thing as native GUI")]
    [(t/label "How is context menu\nSUPPOSED\nto look on Windows?")]
+   [(t/image "web_buttons.webp")]
    [(t/image "windows_menus.jpg")]
    [(t/image {:bg 0xFFCCCCCC} "macos_dropdowns.png")]
-   [(t/image "web_buttons.webp")]
    
    [(t/label "3. Native is expensive")
     (t/label "3. Native is expensive\nAnd inconvenient")]
@@ -130,8 +131,10 @@
       "Everything changes. A lot"])
    
    (t/list "Closest plans"
+     "VDOM"
      "Multiline text"
      "Text editors"
+     "Component library"
      "Viewports"
      "Packaging")
 

@@ -19,7 +19,7 @@ clj -M -m humble-deck.main
 
 # Developing
 
-Starting nREPL server:
+Starting Socket REPL server:
 
 ```sh
 clj -M:dev -m user
