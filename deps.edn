@@ -1,8 +1,15 @@
-{:deps
- {org.clojure/clojure {:mvn/version "1.11.1"}
-  io.github.humbleui/humbleui {:git/sha "321a27826b6dca2e35bde3b6ec0fc261f2e71121"}}
+{:paths ["src"
+         ; "decks/2022-10-dutch-clojure-days"
+         ; "decks/2024-01-london-clojurians"
+         "decks/2024-06-clojure-berlin"]
+ :deps
+ {org.clojure/clojure         {:mvn/version "1.11.3"}
+  io.github.humbleui/humbleui {:git/sha "321a27826b6dca2e35bde3b6ec0fc261f2e71121"}
+  io.github.humbleui/jwm      {:mvn/version "0.4.17"}}
  :aliases
- {:dev {:extra-paths ["dev"]
-        :extra-deps {org.clojure/tools.namespace {:mvn/version "1.4.4"}}
-        :jvm-opts ["-ea"]}}}
- 
+ {:dev
+  {:jvm-opts    ["-ea" "-Duser.language=en" "-Duser.country=US" "-Dfile.encoding=UTF-8"]
+   :extra-paths ["dev"]
+   :extra-deps  {io.github.tonsky/duti {:git/sha "fc833a87a8687b67e66281e216eeee1ad6048168"}
+                 io.github.tonsky/clj-reload {:mvn/version "0.7.1"
+                                              #_#_:local/root "/ws/clj-reload"}}}}}

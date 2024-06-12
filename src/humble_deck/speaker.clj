@@ -4,7 +4,6 @@
     [humble-deck.common :as common]
     [humble-deck.controls :as controls]
     [humble-deck.resources :as resources]
-    [humble-deck.state :as state]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui]
@@ -13,12 +12,12 @@
     [io.github.humbleui.skija FilterTileMode ImageFilter]))
 
 (defn talk-reset! []
-  (swap! state/*state assoc
+  (swap! common/*state assoc
     :speaker-time    1000000
     :speaker-start   nil))
 
 (defn talk-resume! []
-  (swap! state/*state assoc
+  (swap! common/*state assoc
     :speaker-start (- (core/now) 1000)))
 
 (defn time-passed [state]
@@ -26,7 +25,7 @@
     (+ speaker-time (if speaker-start (- (core/now) speaker-start) 0))))
 
 (defn talk-pause! []
-  (swap! state/*state
+  (swap! common/*state
     (fn [state]
       (assoc state
         :speaker-time  (time-passed state)
@@ -49,24 +48,24 @@
 
 (def slides
   (ui/padding 10 0
-    (ui/dynamic _ [ratio (let [r (window/content-rect @state/*window)]
+    (ui/dynamic _ [ratio (let [r (window/content-rect @common/*window)]
                            (/ (:width r) (:height r)))]
       (ui/height #(-> (:width %) (* 5/9) (/ ratio))
         (ui/row
           [:stretch 5
            (ui/rect (paint/fill 0xFFFFFFFF)
              (common/with-context
-               (ui/dynamic _ [{:keys [slide subslide]} @state/*state]
-                 (-> @state/*slides (nth slide) (nth subslide) common/maybe-deref))))]
+               (ui/dynamic _ [{:keys [slide subslide]} @common/*state]
+                 (-> @common/*slides (nth slide) (nth subslide) common/maybe-deref))))]
           (ui/gap 10 0)
           [:stretch 4
            (ui/valign 0.5
-             (ui/dynamic _ [{:keys [slide subslide]} (common/slide-next @state/*state)]
+             (ui/dynamic _ [{:keys [slide subslide]} (common/slide-next @common/*state)]
                (if (and slide subslide)
                  (ui/rect (paint/fill 0xFFFFFFFF)
                    (ui/height #(-> (:width %) (/ ratio))
                      (common/with-context
-                       (-> @state/*slides (nth slide) (nth subslide) common/maybe-deref))))
+                       (-> @common/*slides (nth slide) (nth subslide) common/maybe-deref))))
                  (ui/with-context {:fill-text (paint/fill 0xFFFFFFFF)}
                    (ui/center
                      (ui/label "Last slide"))))))])))))
@@ -97,7 +96,7 @@
      :hui.button/border-radius  0}
     (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
       (ui/rect (paint/fill 0x50000000)
-        (ui/dynamic _ [active? (some? (:speaker-start @state/*state))]
+        (ui/dynamic _ [active? (some? (:speaker-start @common/*state))]
           (ui/row
             (common/template-icon-button
               (if active?
@@ -108,14 +107,14 @@
                 (talk-resume!)))
             (ui/width 40
               (ui/center
-                (ui/dynamic _ [passed (-> (time-passed @state/*state)
+                (ui/dynamic _ [passed (-> (time-passed @common/*state)
                                         (common/duration-format-mm-ss))]
                   (ui/label {:features ["tnum"]} passed))))
             (ui/gap 14 0)
             [:stretch 1
              (ui/valign 0.5
-               (ui/dynamic _ [percent (-> (time-passed @state/*state)
-                                        (/ @state/*talk-duration)
+               (ui/dynamic _ [percent (-> (time-passed @common/*state)
+                                        (/ @common/*talk-duration)
                                         (* 100)
                                         (long)
                                         (min 100))]
@@ -123,8 +122,8 @@
             (ui/gap 14 0)
             (ui/width 40
               (ui/center
-                (ui/dynamic _ [left (-> @state/*talk-duration
-                                      (- (time-passed @state/*state))
+                (ui/dynamic _ [left (-> @common/*talk-duration
+                                      (- (time-passed @common/*state))
                                       (common/duration-format-mm-ss))]
                   (ui/label {:features ["tnum"]} left))))
             (common/template-icon-button resources/icon-talk-reset
@@ -135,7 +134,7 @@
   (controls/key-listener
     (ui/event-listener :window-close-request
       (fn [_ _]
-        (reset! state/*speaker-window nil))
+        (reset! common/*speaker-window nil))
       (ui/event-listener :key
         (fn [{:keys [pressed? modifiers key]} _]
           (when (and 
@@ -152,3 +151,5 @@
                (ui/column
                  progress-controls
                  controls/controls-impl))]))))))
+
+(reset! common/*speaker-app speaker-app)

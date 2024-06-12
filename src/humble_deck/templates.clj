@@ -4,7 +4,6 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [humble-deck.scaler :as scaler]
-    [humble-deck.state :as state]
     [io.github.humbleui.paint :as paint]
     [io.github.humbleui.ui :as ui]))
 
@@ -27,15 +26,16 @@
      (ui/center
        (ui/dynamic ctx [{:keys [leading font-code]} ctx]           
          (ui/column
-           (for [line (remove str/blank? (str/split s #"\n"))
+           (for [line (str/split s #"\n")
                  :let [color (cond
                                (str/starts-with? line "−") 0xFFF5C3C1
                                (str/starts-with? line "+") 0xFFBAF0C0
                                :else 0xFFFFFFFF)]]
              (ui/rect (paint/fill color)
-               (ui/padding (* 0.75 leading)
-                 (ui/halign 0
-                   (ui/label {:font font-code} line)))))))))))
+               (ui/height (* 1.7 leading)
+                 (ui/valign 0.5
+                   (ui/halign 0
+                     (ui/label {:font font-code} line))))))))))))
 
 (defn image
   ([name]
@@ -45,7 +45,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/image (io/file "decks" state/deck name))))))))
+           (ui/image (io/resource name))))))))
 
 (defn animation
   ([name]
@@ -55,7 +55,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/animation (io/file "decks" state/deck name))))))))
+           (ui/animation (io/resource name))))))))
 
 (defn svg
   ([name]
@@ -65,7 +65,7 @@
      (delay
        (ui/rect (paint/fill bg)
          (scaler/scaler
-           (ui/svg (io/file "decks" state/deck name))))))))
+           (ui/svg (io/resource name))))))))
 
 (defn section [name]
   (delay
@@ -89,15 +89,17 @@
                               [(first args) (second args) (nnext args)]
                               [{} (first args) (next args)])
         labels (concat
-                 [[(ui/dynamic ctx [{:keys [font-h1]} ctx]
+                 [[(ui/dynamic ctx [{:keys [font-h1 leading]} ctx]
                      (ui/label {:font font-h1} header))]]
                  (map
                    (fn [line]
                      (mapv
                        #(ui/dynamic ctx [{:keys [font-body unit]} ctx]
                           (ui/row
-                            icon-bullet
-                            (ui/gap (* unit 3) 0)
+                            (when-some [bullet (:bullet opts icon-bullet)]
+                              (ui/row
+                                bullet
+                                (ui/gap (* unit 3) 0)))
                             (ui/label {:font font-body} %)))
                        (if (sequential? line) line [line])))
                    lines))]
@@ -109,7 +111,31 @@
             (ui/max-width (flatten labels)
               (ui/dynamic ctx [{:keys [leading]} ctx]
                 (ui/column
-                  (interpose (ui/gap 0 leading)
+                  (interpose (ui/gap 0 (* 1.2 leading))
+                    (for [label (concat
+                                  (map peek (take i labels))
+                                  [(-> labels (nth i) (nth j))])]
+                      (ui/halign 0
+                        label))))))))))))
+
+(defn code-list [& args]
+  (let [[opts blocks] (if (map? (first args))
+                        [(first args) (next args)]
+                        [{} args])
+        labels (map
+                 (fn [block]
+                   (mapv #(deref (code %))
+                     (if (sequential? block) block [block])))
+                 blocks)]
+    (vec
+      (for [i (range (:from opts 0) (count labels))
+            j (range 0 (count (nth labels i)))]
+        (delay
+          (ui/center
+            (ui/max-width (flatten labels)
+              (ui/dynamic ctx [{:keys [leading]} ctx]
+                (ui/column
+                  (interpose (ui/gap 0 (* 1.7 leading))
                     (for [label (concat
                                   (map peek (take i labels))
                                   [(-> labels (nth i) (nth j))])]

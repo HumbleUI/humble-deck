@@ -1,7 +1,6 @@
 (ns slides
   (:require
     [humble-deck.common :as common]
-    [humble-deck.state :as state]
     [humble-deck.templates :as t]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.debug :as debug]
@@ -273,13 +272,13 @@
                 (ui/label "Debug info"))))
           (ui/gap 0 10)
           (ui/clickable
-            {:on-click (fn [_] (swap! state/*image-snapshot? not))}
+            {:on-click (fn [_] (swap! common/*image-snapshot? not))}
             (ui/row
               (ui/valign 0.5
-                (ui/toggle state/*image-snapshot?))
+                (ui/toggle common/*image-snapshot?))
               (ui/gap 5 0)
               (ui/valign 0.5
                 (ui/label "Cache previews")))))))))
 
-(swap! state/*slider
+(swap! common/*slider
   assoc :max (dec (count slides)))

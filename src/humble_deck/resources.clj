@@ -10,7 +10,7 @@
   (typeface/make-from-path "resources/CaseMicro-Bold.otf"))
 
 (def typeface-code
-  (typeface/make-from-path "resources/MartianMono-StdRg.otf"))
+  (typeface/make-from-path "resources/MartianMono-StdLt.otf"))
 
 (def icon-prev
   (ui/svg "resources/prev.svg"))

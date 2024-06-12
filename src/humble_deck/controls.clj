@@ -2,7 +2,6 @@
   (:require
     [humble-deck.common :as common]
     [humble-deck.resources :as resources]
-    [humble-deck.state :as state]
     [io.github.humbleui.app :as app]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
@@ -14,31 +13,31 @@
     [io.github.humbleui.skija FilterTileMode ImageFilter]))
 
 (defn cancel-timer! []
-  (when-some [cancel-timer (:controls-timer @state/*state)]
+  (when-some [cancel-timer (:controls-timer @common/*state)]
     (cancel-timer))
-  (swap! state/*state assoc :controls-timer nil))
+  (swap! common/*state assoc :controls-timer nil))
 
 (defn hide-controls! []
-  (when (= :present (:mode @state/*state))
-    (swap! state/*state assoc :controls? false)
+  (when (= :present (:mode @common/*state))
+    (swap! common/*state assoc :controls? false)
     (cancel-timer!)
     (app/doui
-      (window/hide-mouse-cursor-until-moved @state/*window))))
+      (window/hide-mouse-cursor-until-moved @common/*window))))
 
 (defn show-controls! []
   (cancel-timer!)
-  (swap! state/*state assoc
+  (swap! common/*state assoc
     :controls-timer (core/schedule hide-controls! 2500)
     :controls?      true)
   (app/doui
-    (window/hide-mouse-cursor-until-moved @state/*window false)))
+    (window/hide-mouse-cursor-until-moved @common/*window false)))
 
 (defn toggle-modes []
-  (case (:mode @state/*state)
-    :present  (swap! state/*state assoc
+  (case (:mode @common/*state)
+    :present  (swap! common/*state assoc
                 :mode :overview
                 :animation-end (core/now))
-    :overview (swap! state/*state assoc
+    :overview (swap! common/*state assoc
                 :animation-start (core/now))))
 
 (defn key-listener [child]
@@ -49,26 +48,26 @@
              next-key? #{:down :right :page-down :space}
              cmd?    (modifiers :mac-command)
              option? (modifiers :mac-option)
-             window  @state/*window]
+             window  @common/*window]
          (when
            (cond
              (and cmd? (prev-key? key))
-             (swap! state/*state common/slide-first)
+             (swap! common/*state common/slide-first)
 
              (and cmd? (next-key? key))
-             (swap! state/*state common/slide-last)
+             (swap! common/*state common/slide-last)
 
              (and option? (prev-key? key))
-             (swap! state/*state common/slide-prev-10)
+             (swap! common/*state common/slide-prev-10)
              
              (and option? (next-key? key))
-             (swap! state/*state common/slide-next-10)
+             (swap! common/*state common/slide-next-10)
              
              (prev-key? key)
-             (swap! state/*state #(or (common/slide-prev %) %))
+             (swap! common/*state #(or (common/slide-prev %) %))
 
              (next-key? key)
-             (swap! state/*state #(or (common/slide-next %) %))
+             (swap! common/*state #(or (common/slide-next %) %))
 
              (= :t key)
              (toggle-modes)
@@ -180,13 +179,13 @@
      :hui.button/border-radius  0}
     (ui/backdrop (ImageFilter/makeBlur 70 70 FilterTileMode/CLAMP)
       (ui/rect (paint/fill 0x50000000)
-        (ui/dynamic _ [{:keys [mode]} @state/*state]
+        (ui/dynamic _ [{:keys [mode]} @common/*state]
           (ui/row
             (common/template-icon-button resources/icon-prev
-              (swap! state/*state #(or (common/slide-prev %) %)))
+              (swap! common/*state #(or (common/slide-prev %) %)))
 
             (common/template-icon-button resources/icon-next
-              (swap! state/*state #(or (common/slide-next %) %)))
+              (swap! common/*state #(or (common/slide-next %) %)))
 
             (ui/gap 14 0)
                                         
@@ -196,11 +195,11 @@
                  {:track-active   (->SliderTrackActive)
                   :track-inactive (->SliderTrackInactive)
                   :thumb          (->SliderThumb)}
-                 state/*slider))]
+                 common/*slider))]
                       
             (ui/gap 14 0)
                       
-            (ui/dynamic _ [mode (:mode @state/*state)]
+            (ui/dynamic _ [mode (:mode @common/*state)]
               (common/template-icon-button
                 (case mode
                   :overview resources/icon-present
@@ -224,21 +223,21 @@
      :on-over (fn [_] (show-controls!))
      :on-out  (fn [_] (hide-controls!))}
     (ui/valign 1
-      (ui/dynamic _ [{:keys [controls?]} @state/*state]
+      (ui/dynamic _ [{:keys [controls?]} @common/*state]
         (if (not controls?)
           (ui/gap 0 0)
           (ui/mouse-listener
             {:on-move (fn [_] (cancel-timer!))}
             controls-impl))))))
 
-(add-watch state/*state ::update-slider
+(add-watch common/*state ::update-slider
   (fn [_ _ _ new]
-    (when (not= (:slide new) (:value @state/*slider))
-      (swap! state/*slider assoc :value (:slide new)))))
+    (when (not= (:slide new) (:value @common/*slider))
+      (swap! common/*slider assoc :value (:slide new)))))
 
-(add-watch state/*slider ::rewind
+(add-watch common/*slider ::rewind
   (fn [_ _ _ new]
-    (when (not= (:value new) (:slide @state/*state))
-      (swap! state/*state assoc
+    (when (not= (:value new) (:slide @common/*state))
+      (swap! common/*state assoc
         :slide    (:value new)
-        :subslide (dec (count (nth @state/*slides (:value new))))))))
+        :subslide (dec (count (nth @common/*slides (:value new))))))))

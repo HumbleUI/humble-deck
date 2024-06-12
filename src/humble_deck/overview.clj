@@ -2,7 +2,6 @@
   (:require
     [clojure.math :as math]
     [humble-deck.common :as common]
-    [humble-deck.state :as state]
     [io.github.humbleui.canvas :as canvas]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.paint :as paint]
@@ -52,7 +51,7 @@
   
   (-draw [_ ctx rect ^Canvas canvas]
     (canvas/draw-rect canvas rect bg)
-    (let [{:keys [slide animation-start animation-end]} @state/*state]
+    (let [{:keys [slide animation-start animation-end]} @common/*state]
       (if (or animation-start animation-end)
         (let [progress (cond
                          animation-start
@@ -62,9 +61,9 @@
                          (max 0 (- 1 (/ (- (core/now) animation-end) zoom-time))))
               progress (ease-in-out transition-circ progress)]
           (when (and animation-start (>= progress 1))
-            (swap! state/*state assoc :mode :present :animation-start nil))
+            (swap! common/*state assoc :mode :present :animation-start nil))
           (when (and animation-end (<= progress 0))
-            (swap! state/*state assoc :animation-end nil))
+            (swap! common/*state assoc :animation-end nil))
           (let [{:keys [scale window]} ctx
                 row            (quot slide per-row)
                 column         (mod slide per-row)
@@ -147,12 +146,12 @@
 
 (def overview
   (ui/with-bounds ::bounds
-    (ui/dynamic ctx [{:keys [epoch]} @state/*state
-                     slides @state/*slides
+    (ui/dynamic ctx [{:keys [epoch]} @common/*state
+                     slides @common/*slides
                      {:keys [scale]} ctx
                      bounds (::bounds ctx)
                      {:keys [per-row slide-w slide-h]} (slide-size bounds scale)
-                     image-snapshot? @state/*image-snapshot?]
+                     image-snapshot? @common/*image-snapshot?]
       (zoomer per-row slide-w slide-h
         (ui/vscrollbar
           (ui/padding padding padding padding (+ padding 40)
@@ -174,13 +173,13 @@
                                   (ui/clickable
                                     {:on-click
                                      (fn [_]
-                                       (swap! state/*state assoc
+                                       (swap! common/*state assoc
                                          :slide           idx
-                                         :subslide        (dec (count (nth @state/*slides idx)))
+                                         :subslide        (dec (count (nth @common/*slides idx)))
                                          :animation-start (core/now)))}
                                     (ui/clip-rrect 4
                                       (ui/dynamic ctx [hover? (let [{:hui/keys [hovered?]} ctx
-                                                                    {:keys [mode animation-start animation-end]} @state/*state]
+                                                                    {:keys [mode animation-start animation-end]} @common/*state]
                                                                 (and
                                                                   (= :overview mode)
                                                                   (nil? animation-start)
