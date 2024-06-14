@@ -1,5 +1,6 @@
 (ns humble-deck.common
   (:require
+    [clojure.math :as math]
     [humble-deck.resources :as resources]
     [io.github.humbleui.core :as core]
     [io.github.humbleui.font :as font]
@@ -162,9 +163,9 @@
                 :font-body font-body
                 :font-h1   font-h1
                 :font-code font-code
-                :leading   (quot cap-height 2)
+                :leading   (-> cap-height (/ scale) (math/ceil))
                 :fill-text (paint/fill 0xFF212B37)
-                :unit      (quot cap-height 10)}
+                :unit      (-> cap-height (/ scale) (/ 10) (math/ceil))}
                opts)
              child)))))))
 
