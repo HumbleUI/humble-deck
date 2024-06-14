@@ -5,25 +5,14 @@
 
 (def slides
   [[(t/image "title.webp")]
-   (t/list "Fact:" "We all love REPL" "REPL is INTERACTIVE")
-   (t/list "Contradiction:"
-     "We want to update code"
-     "We don’t want to restart REPL")
-   [(t/label "Functions are fine")]
-   (t/code-list
-     "(defn a [x]
-  (+ 1 x))"
-
-     "(defn b [x]
-  (+ 10 (a x)))"
-       
-     ["(b 5)" "(b 5) ;=> 16"]
-       
-     "(defn a [x]
-  (- 1 x))"
-       
-     ["(b 5)" "(b 5) ;=> 6"])
-   [(t/label "But data has dependencies")]
+   (t/list "Problem:"
+     "We love REPL"
+     "Code changes during development"
+     "Runtime state != file state"
+     "How to bring changes to running app?")
+   (t/list "Solution:"
+     "Eval!")
+   [(t/label "Problem: data has dependencies")]
    (t/code-list
      "(def a
   1)"
@@ -37,11 +26,8 @@
   -1)"
 
      ["b" "b ;=> 11"])
-   (t/list "Problem:" "Not all Clojure code is functions")
    
    [(t/section "How to reload code?")]
-   (t/list "Eval forms"
-     "Tedious")
    
    (t/list {:bullet nil} "Eval buffer"
      "👍 Works for single file"
@@ -151,7 +137,9 @@
    
    [(t/section "DEMO tiem")]
    
-   [(t/label "Excluding code")]
+   [(t/section "Problem: keep state, reload code")]
+
+   [(t/label "Excluding namespaces")]
    (t/code-list
      "; tools.namespace"
      "(ns state
@@ -168,7 +156,7 @@
      "(clj-reload.core/init
   {:no-reload '#{state}})")
 
-   [(t/label "Excluding state")]
+   [(t/label "Excluding vars")]
    
    (t/code-list
      "; tools.namespace
@@ -258,8 +246,8 @@
      "1. Find all Clojure files"
      "2. Read & parse"
      "3. Build dependency graph"
-     "4. Topological sort"
-     "5. Figure out what changed"
+     "4. Figure out what changed"
+     "5. Topological sort"
      "6. Unload"
      "7. Load")
    
@@ -281,8 +269,8 @@
      "1. Find all Clojure files"
      "2. Read & parse"
      "3. Build dependency graph"
-     "4. Topological sort"
-     "5. Figure out what changed"
+     "4. Figure out what changed"
+     "5. Topological sort"
      "6. Unload"
      "7. Load")
    
@@ -290,8 +278,8 @@
      "1. Find all Clojure files"
      "2. Read & parse"
      "3. Build dependency graph"
-     "4. Topological sort"
-     "5. Figure out what changed"
+     "4. Figure out what changed"
+     "5. Topological sort"
      "5a. Stash keeps (defonce, ...)"
      "6. Unload"
      "6a. Read & patch files"
